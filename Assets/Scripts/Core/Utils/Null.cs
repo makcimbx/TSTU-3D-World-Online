@@ -1,0 +1,1 @@
+﻿namespace TSTU { public sealed class Null { private Null() {} } }
