@@ -40,5 +40,11 @@ namespace TSTUVirualWorldServer
             if (thread != null) thread.Abort();
             richTextBox1.Text += $"Перестаем прослушивать порт {localPort}\n";
         }
+
+        private void OnApplicationClosed(object sender, FormClosedEventArgs e)
+        {
+            gameServer.StopListening();
+            if (thread != null) thread.Abort();
+        }
     }
 }

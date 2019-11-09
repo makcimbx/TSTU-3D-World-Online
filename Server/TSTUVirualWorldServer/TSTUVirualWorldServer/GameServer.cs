@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SimpleJSON;
 
 namespace TSTUVirualWorldServer
 {
@@ -13,6 +14,7 @@ namespace TSTUVirualWorldServer
     {
         private int localPort;
         private Form1 form;
+        private DataBaseUtils dataBaseUtils;
 
         private UdpClient receiver;
 
@@ -20,6 +22,8 @@ namespace TSTUVirualWorldServer
         {
             this.form = form;
             this.localPort = localPort;
+
+            dataBaseUtils = new DataBaseUtils();
         }
 
         public void StartListening()
@@ -32,11 +36,15 @@ namespace TSTUVirualWorldServer
                 while (true)
                 {
                     byte[] data = receiver.Receive(ref remoteIp); // получаем данные
-                    string message = Encoding.Unicode.GetString(data);
-                    form.richTextBox1.Invoke(new MethodInvoker(() =>
-                    {
-                        form.richTextBox1.Text += $"Собеседник: {message}\n";
-                    }));
+                    string message = Encoding.UTF8.GetString(data);
+                    var jsonMessage = JSON.Parse(message);
+                    LogMessage($"Попытка входа! Логин: {jsonMessage["login"]}; Пароль: {jsonMessage["password"]};");
+                    LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+                    var loginTry = dataBaseUtils.CheckLoginAccess(jsonMessage["login"], jsonMessage["password"]);
+                    LogMessage($"Попытка входа! Результат: {loginTry}; Отправляем результаты клиенту!");
+                    JSONObject answer = new JSONObject();
+                    answer["answer"] = loginTry;
+                    SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
                 }
             }
             catch (Exception ex)
@@ -60,7 +68,7 @@ namespace TSTUVirualWorldServer
             UdpClient sender = new UdpClient(); // создаем UdpClient для отправки сообщений
             try
             {
-                byte[] data = Encoding.Unicode.GetBytes(message);
+                byte[] data = Encoding.UTF8.GetBytes(message);
                 sender.Send(data, data.Length, remoteAddress, remotePort); // отправка
             }
             catch (Exception ex)
@@ -74,6 +82,14 @@ namespace TSTUVirualWorldServer
             {
                 sender.Close();
             }
+        }
+
+        private void LogMessage(string message)
+        {
+            form.richTextBox1.Invoke(new MethodInvoker(() =>
+            {
+                form.richTextBox1.Text += $"{message}\n";
+            }));
         }
     }
 }

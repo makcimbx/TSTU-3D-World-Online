@@ -81,6 +81,7 @@
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.OnApplicationClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 
