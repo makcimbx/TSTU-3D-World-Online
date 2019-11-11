@@ -38,13 +38,15 @@ namespace TSTUVirualWorldServer
                     byte[] data = receiver.Receive(ref remoteIp); // получаем данные
                     string message = Encoding.UTF8.GetString(data);
                     var jsonMessage = JSON.Parse(message);
-                    LogMessage($"Попытка входа! Логин: {jsonMessage["login"]}; Пароль: {jsonMessage["password"]};");
-                    LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
-                    var loginTry = dataBaseUtils.CheckLoginAccess(jsonMessage["login"], jsonMessage["password"]);
-                    LogMessage($"Попытка входа! Результат: {loginTry}; Отправляем результаты клиенту!");
-                    JSONObject answer = new JSONObject();
-                    answer["answer"] = loginTry;
-                    SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+                    var state = jsonMessage["state"].AsInt;
+                    if(state == 1)
+                    {
+                        ReadLoginMessage(jsonMessage, remoteIp);
+                    }
+                    else if(state == 2)
+                    {
+                        ReadRegistrationMessage(jsonMessage, remoteIp);
+                    }
                 }
             }
             catch (Exception ex)
@@ -61,6 +63,28 @@ namespace TSTUVirualWorldServer
         {
             if(receiver != null)
                 receiver.Close();
+        }
+
+        private void ReadLoginMessage(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Попытка входа! Логин: {jsonNode["login"]}; Пароль: {jsonNode["password"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+            var loginTry = dataBaseUtils.CheckLoginAccess(jsonNode["login"], jsonNode["password"]);
+            LogMessage($"Попытка входа! Результат: {loginTry}; Отправляем результаты клиенту!");
+            JSONObject answer = new JSONObject();
+            answer["answer"] = loginTry;
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void ReadRegistrationMessage(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Попытка регистрации! Логин: {jsonNode["login"]}; Пароль: {jsonNode["password"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+            var registration = dataBaseUtils.AddNewRegistration(jsonNode["login"], jsonNode["password"]);
+            LogMessage($"Попытка регистрации! Результат: {registration}; Отправляем результаты клиенту!");
+            JSONObject answer = new JSONObject();
+            answer["answer"] = registration;
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
 
         private void SendMessage(string message ,string remoteAddress, int remotePort)

@@ -7,6 +7,12 @@ using TSTU.Core.Configuration;
 
 namespace TSTU.Server
 {
+    public enum ServerState
+    {
+        Login = 1,
+        Registration
+    }
+
     public class GameServer : IGameServer, ITickable, IConfigProvider
     {
         private const string configKey = "game_server";
@@ -33,6 +39,24 @@ namespace TSTU.Server
         {
             UdpClient client = new UdpClient();
             JSONObject jSONObject = new JSONObject();
+            jSONObject["state"] = (int)ServerState.Login;
+            jSONObject["login"] = login;
+            jSONObject["password"] = password;
+            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            client.Send(data, data.Length, serverIpAddress, serverPort);
+
+            var answer = await client.ReceiveAsync();
+            string message = Encoding.UTF8.GetString(answer.Buffer);
+            JSONNode jsonAnswer = JSON.Parse(message);
+            client.Close();
+            return jsonAnswer["answer"].AsBool;
+        }
+
+        public async Task<bool> Registration(string login, string password)
+        {
+            UdpClient client = new UdpClient();
+            JSONObject jSONObject = new JSONObject();
+            jSONObject["state"] = (int)ServerState.Registration;
             jSONObject["login"] = login;
             jSONObject["password"] = password;
             byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());

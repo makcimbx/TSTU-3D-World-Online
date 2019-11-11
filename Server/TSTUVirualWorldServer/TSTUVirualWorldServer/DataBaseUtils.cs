@@ -36,6 +36,45 @@ namespace TSTUVirualWorldServer
             return loginAccess;
         }
 
+        public bool AddNewRegistration(string login, string password)
+        {
+            if (CheckLoginExists(login)) return false;
+
+            usersTableAdapter.Insert(GetMaxID() + 1, login, password);
+
+            return true;
+        }
+
+        private bool CheckLoginExists(string login)
+        {
+            var usersDataTable = usersTableAdapter.GetData();
+
+            bool loginExists = false;
+            foreach (DataRow row in usersDataTable.Rows)
+            {
+                if (string.Equals(row["Login"].ToString(), login))
+                {
+                    loginExists = true;
+                    break;
+                }
+            }
+
+            return loginExists;
+        }
+
+        private int GetMaxID()
+        {
+            var usersDataTable = usersTableAdapter.GetData();
+
+            int maxId = 1;
+            foreach (DataRow row in usersDataTable.Rows)
+            {
+                if ((int)row["Id"] > maxId) maxId = (int)row["Id"];
+            }
+
+            return maxId;
+        }
+
         private void LogMessage(string message)
         {
             form.richTextBox1.Invoke(new MethodInvoker(() =>
