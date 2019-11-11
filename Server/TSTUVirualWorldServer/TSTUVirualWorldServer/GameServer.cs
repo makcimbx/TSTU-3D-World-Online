@@ -18,12 +18,12 @@ namespace TSTUVirualWorldServer
 
         private UdpClient receiver;
 
-        public GameServer(Form1 form, int localPort)
+        public GameServer(Form1 form, int localPort, TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter)
         {
             this.form = form;
             this.localPort = localPort;
 
-            dataBaseUtils = new DataBaseUtils();
+            dataBaseUtils = new DataBaseUtils(usersTableAdapter, form);
         }
 
         public void StartListening()

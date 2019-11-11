@@ -16,15 +16,18 @@ namespace TSTUVirualWorldServer
         private static GameServer gameServer;
         private static Thread thread;
 
+        private DataBaseEditorForm dataBaseEditorForm;
         private int localPort;
 
         public Form1()
         {
             InitializeComponent();
 
-            localPort = int.Parse(textBox1.Text);
+            dataBaseEditorForm = new DataBaseEditorForm();
 
-            gameServer = new GameServer(this, localPort);
+            localPort = int.Parse(textBox1.Text);
+            
+            gameServer = new GameServer(this, localPort, dataBaseEditorForm.usersTableAdapter);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -45,6 +48,11 @@ namespace TSTUVirualWorldServer
         {
             gameServer.StopListening();
             if (thread != null) thread.Abort();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            dataBaseEditorForm.Show();
         }
     }
 }

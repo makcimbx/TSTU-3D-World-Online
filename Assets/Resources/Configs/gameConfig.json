@@ -1,6 +1,6 @@
 {
   "game_server": {
-    "server_ip_adress": "25.52.251.23",
+    "server_ip_adress": "127.0.0.1",
     "server_port": 8001
   }
 }
