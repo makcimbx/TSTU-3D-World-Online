@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TSTU.Server
 {
@@ -6,5 +7,7 @@ namespace TSTU.Server
     {
         Task<bool> Login(string login, string password);
         Task<bool> Registration(string login, string password);
+        TSTU.Model.Player CurrentPlayer { get; }
+        List<TSTU.Model.Player> OtherPlayerList { get; }
     }
 }

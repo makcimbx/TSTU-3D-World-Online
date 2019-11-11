@@ -10,11 +10,21 @@ using SimpleJSON;
 
 namespace TSTUVirualWorldServer
 {
+    public enum ServerState
+    {
+        Login = 1,
+        Registration,
+        StartPlayerInfoUpdate,
+        PlayerInfoUpdate
+    }
+
     public class GameServer
     {
         private int localPort;
         private Form1 form;
         private DataBaseUtils dataBaseUtils;
+
+        private Dictionary<int, IPEndPoint> usersIdIpList = new Dictionary<int, IPEndPoint>();
 
         private UdpClient receiver;
 
@@ -47,6 +57,14 @@ namespace TSTUVirualWorldServer
                     {
                         ReadRegistrationMessage(jsonMessage, remoteIp);
                     }
+                    else if(state == 3)
+                    {
+                        StartPlayerInfoStream(jsonMessage, remoteIp);
+                    }
+                    else if(state == 4)
+                    {
+                        UpdatePlayerInfoStream(jsonMessage, remoteIp);
+                    }
                 }
             }
             catch (Exception ex)
@@ -69,10 +87,11 @@ namespace TSTUVirualWorldServer
         {
             LogMessage($"Попытка входа! Логин: {jsonNode["login"]}; Пароль: {jsonNode["password"]};");
             LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
-            var loginTry = dataBaseUtils.CheckLoginAccess(jsonNode["login"], jsonNode["password"]);
-            LogMessage($"Попытка входа! Результат: {loginTry}; Отправляем результаты клиенту!");
+            var userId = dataBaseUtils.CheckLoginAccess(jsonNode["login"], jsonNode["password"]);
+            LogMessage($"Попытка входа! Результат: {userId != -1}; Отправляем результаты клиенту!");
             JSONObject answer = new JSONObject();
-            answer["answer"] = loginTry;
+            answer["answer"] = userId != -1;
+            answer["user_id"] = userId;
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
 
@@ -87,9 +106,65 @@ namespace TSTUVirualWorldServer
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
 
-        private void SendMessage(string message ,string remoteAddress, int remotePort)
+        private void StartPlayerInfoStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Начало постоянной трансляции игровых данных! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            if (usersIdIpList.ContainsKey(jsonNode["id"].AsInt))
+            {
+                LogMessage("Информация уже транслируется! ОТМЕНА!");
+                answer["answer"] = false;
+            }
+            else
+            {
+                answer["answer"] = true;
+            }
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void UpdatePlayerInfoStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Игрок отправляет свою позицию! Id: {jsonNode["id"]}; PosX: {jsonNode["pos_x"]}; PosY: {jsonNode["pos_y"]}; PosZ: {jsonNode["pos_z"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+            
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+
+            List<int> errorIdList = new List<int>();
+            int counter = 0;
+            foreach (var item in usersIdIpList)
+            {
+                if (string.Equals(item.Value.ToString(), remoteIp.Address.ToString())) continue;
+
+                JSONObject message = new JSONObject();
+                message["state"] = (int)ServerState.PlayerInfoUpdate;
+                message["id"] = item.Key;
+                message["pos_x"] = jsonNode["pos_x"];
+                message["pos_y"] = jsonNode["pos_y"];
+                message["pos_z"] = jsonNode["pos_z"];
+                var success = SendMessage(message.ToString(), item.Value.ToString(), remoteIp.Port);
+
+                if(!success)
+                {
+                    errorIdList.Add(item.Key);
+                }
+                counter++;
+            }
+
+            if(errorIdList.Count > 0)
+            {
+                LogMessage($"Не можем отправить информацию {errorIdList.Count} клиентам! ОЧИСТКА ИХ!");
+                errorIdList.ForEach(item => usersIdIpList.Remove(item));
+            }
+        }
+
+        private bool SendMessage(string message ,string remoteAddress, int remotePort)
         {
             UdpClient sender = new UdpClient(); // создаем UdpClient для отправки сообщений
+            bool haveError = false;
             try
             {
                 byte[] data = Encoding.UTF8.GetBytes(message);
@@ -97,6 +172,17 @@ namespace TSTUVirualWorldServer
             }
             catch (Exception ex)
             {
+                haveError = true;
+
+                foreach (var item in usersIdIpList)
+                {
+                    if (string.Equals(item.Value.Address.ToString(), remoteAddress))
+                    {
+                        usersIdIpList.Remove(item.Key);
+                        break;
+                    }
+                }
+
                 form.richTextBox1.Invoke(new MethodInvoker(() =>
                 {
                     form.richTextBox1.Text += $"{ex}\n";
@@ -106,6 +192,7 @@ namespace TSTUVirualWorldServer
             {
                 sender.Close();
             }
+            return !haveError;
         }
 
         private void LogMessage(string message)

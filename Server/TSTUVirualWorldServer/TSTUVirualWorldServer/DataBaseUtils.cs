@@ -19,21 +19,21 @@ namespace TSTUVirualWorldServer
             this.usersTableAdapter = usersTableAdapter;
         }
 
-        public bool CheckLoginAccess(string login, string password)
+        public int CheckLoginAccess(string login, string password)
         {
             var usersDataTable = usersTableAdapter.GetData();
 
-            bool loginAccess = false;
+            int userId = -1;
             foreach (DataRow row in usersDataTable.Rows)
             {
                 if(string.Equals(row["Login"].ToString(), login) && string.Equals(row["Password"].ToString(), password))
                 {
-                    loginAccess = true;
+                    userId = (int)row["Id"];
                     break;
                 }
             }
 
-            return loginAccess;
+            return userId;
         }
 
         public bool AddNewRegistration(string login, string password)
