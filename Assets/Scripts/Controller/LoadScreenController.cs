@@ -22,10 +22,16 @@ namespace TSTU.Controller
         }
 
 
-        public void OnSignIn()
+        public async void OnSignIn()
         {
             Debug.Log($"Ввод параши { Login.text} - {Password.text}");
-            SceneManager.LoadScene(1,LoadSceneMode.Single);
+            var answer = await GameController.Instance.GameServer.Login(Login.text, Password.text);
+            if (answer)
+                SceneManager.LoadScene(1,LoadSceneMode.Single);
+            else
+            {
+                Debug.Log($"Твоя параша не существует, соси");
+            }
         }
     }
 
