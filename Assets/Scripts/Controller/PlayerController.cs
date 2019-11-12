@@ -1,68 +1,75 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-using UniRx;
+using UnityStandardAssets.Characters.FirstPerson;
+using UnityEngine.UI;
 
 namespace TSTU.Controller
 {
     public class PlayerController : MonoBehaviour
     {
-        [SerializeField] private Transform playerPrefab;
+        [SerializeField] private FirstPersonController firstPersonController;
+        [SerializeField] private GameObject panel;
 
-        private Dictionary<TSTU.Model.Player, Transform> playerList = new Dictionary<TSTU.Model.Player, Transform>();
+        private StateView stateView = StateView.none;
 
-        private async void Start()
+        public enum StateView
         {
-            await GameController.Instance.GameServer.StartPlayerInfoStream();
+            none,
+            inventory,
+            esc
 
-            GameController.Instance.OnSecondPassed.Subscribe(_ => UpdateInfo()).AddTo(this);
         }
 
-        private async void UpdateInfo()
-        {
-            GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
-            await GameController.Instance.GameServer.UpdatePlayerInfoStream();
 
-            var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
-            Dictionary<TSTU.Model.Player, Transform> toDestroyList = new Dictionary<TSTU.Model.Player, Transform>();
-            foreach (var item in playerList)
+        private void Start()
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            panel.SetActive(false);
+
+        }
+        private void Update()
+        {
+
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                var spawnedPlayer = otherPlayerList.Find(player => player.Id == item.Key.Id);
-                if (spawnedPlayer != null)
+                if (stateView == StateView.esc)
                 {
-                    item.Value.position = spawnedPlayer.PositionOnMap;
+                    firstPersonController.enabled = true;
+                    Cursor.lockState = CursorLockMode.Locked;
+                    stateView = StateView.none;
+                }
+                else if (stateView == StateView.inventory)
+                {
+                    panel.SetActive(false);
+                    stateView = StateView.none;
                 }
                 else
                 {
-                    toDestroyList.Add(item.Key, item.Value);
+                    stateView = StateView.esc;
+                    firstPersonController.enabled = false;
+                    Cursor.lockState = CursorLockMode.None;
                 }
-            }
-
-            foreach (var item in toDestroyList)
-            {
-                Destroy(item.Value);
-                playerList.Remove(item.Key);
-            }
-
-            foreach (var item in otherPlayerList)
-            {
-                TSTU.Model.Player spawnedPlayer = null;
-                foreach (var spawnedplayers in playerList)
+                if (Input.GetKeyDown(KeyCode.Tab))
                 {
-                    if (spawnedplayers.Key.Id == item.Id)
+
+                    if (stateView == StateView.inventory)
                     {
-                        spawnedPlayer = spawnedplayers.Key;
-                        break;
+                        Cursor.lockState = CursorLockMode.Locked;
+                        panel.SetActive(false);
+                        firstPersonController.enabled = true;
+                        stateView = StateView.none;
                     }
+                    else
+                    {
+                        stateView = StateView.inventory;
+                        firstPersonController.enabled = false;
+                        Cursor.lockState = CursorLockMode.None;
+                        panel.SetActive(true);
+                    }
+
                 }
 
-                if (spawnedPlayer == null)
-                {
-                    var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
-                    var player = new TSTU.Model.Player(item.Id);
-                    player.PositionOnMap = item.PositionOnMap;
-                    playerList.Add(player, controller);
-                }
             }
         }
     }
