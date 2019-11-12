@@ -6,10 +6,17 @@ using UnityEngine.UI;
 
 namespace TSTU.Controller
 {
+    [RequireComponent(typeof(InventoryController), typeof(FirstPersonController))]
+
     public class PlayerController : MonoBehaviour
     {
-        [SerializeField] private FirstPersonController firstPersonController;
+        [Header("Панель инвентаря")]
         [SerializeField] private GameObject panel;
+
+        private FirstPersonController firstPersonController;
+        private InventoryController inventoryController;
+
+
 
         private StateView stateView = StateView.none;
 
@@ -17,37 +24,43 @@ namespace TSTU.Controller
         {
             none,
             inventory,
-            esc
-                
+            esc                
         }
 
 
         private void Start()
         {
+            inventoryController = GetComponent<InventoryController>();
+            firstPersonController = GetComponent<FirstPersonController>();
+
             Cursor.lockState = CursorLockMode.Locked;
-            panel.SetActive(false);
+            inventoryController.InventoryPanel(panel);
+            inventoryController.SetActive(false);
+            
+
             
         }
         private void Update()
         {
-            
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (stateView == StateView.esc)
-                {
-                    firstPersonController.enabled = true;
+                {                    
                     Cursor.lockState = CursorLockMode.Locked;
+                    firstPersonController.enabled = (true);
                     stateView = StateView.none;
                 }
                 else if (stateView == StateView.inventory)
                 {
-                    panel.SetActive(false);
+                    inventoryController.SetActive(false);
+                    firstPersonController.SetRotationStatus(true);
                     stateView = StateView.none;
+                    Cursor.lockState = CursorLockMode.Locked;
                 }
                 else
                 {
                     stateView = StateView.esc;
-                    firstPersonController.enabled = false;
+                    firstPersonController.enabled = (false);
                     Cursor.lockState = CursorLockMode.None;
                 }
 
@@ -59,18 +72,38 @@ namespace TSTU.Controller
                 if (stateView == StateView.inventory)
                 {
                     Cursor.lockState = CursorLockMode.Locked;
-                    panel.SetActive(false);
-                    firstPersonController.enabled = true;
+                    inventoryController.SetActive(false);
+                    firstPersonController.SetRotationStatus(true);
                     stateView = StateView.none;
                 }
-                else
+                else if (stateView == StateView.none)
                 {
                     stateView = StateView.inventory;
-                    firstPersonController.enabled = false;
+                    firstPersonController.SetRotationStatus(false);
                     Cursor.lockState = CursorLockMode.None;
-                    panel.SetActive(true);
+                    inventoryController.SetActive(true);
                 }
 
+            }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray,out hit))
+                {
+                    if (hit.distance <= 3.5f) {
+                        Item item;
+                        if (hit.collider.TryGetComponent<Item>(out item))
+                        {
+                            Debug.Log(hit.collider.gameObject.name);
+
+                            inventoryController.addItem(item);
+                            hit.collider.gameObject.SetActive(false);
+                        }
+                    }
+                }
             }
 
         }

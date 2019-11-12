@@ -10,6 +10,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
     [RequireComponent(typeof (AudioSource))]
     public class FirstPersonController : MonoBehaviour
     {
+        [SerializeField] private bool m_MouseRotation;
+        [SerializeField] private bool m_MoveSound;
+
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
         [SerializeField] private float m_RunSpeed;
@@ -87,7 +90,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void PlayLandingSound()
         {
             m_AudioSource.clip = m_LandSound;
-            m_AudioSource.Play();
+           // m_AudioSource.Play();
             m_NextStep = m_StepCycle + .5f;
         }
 
@@ -116,7 +119,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 if (m_Jump)
                 {
                     m_MoveDir.y = m_JumpSpeed;
-                    PlayJumpSound();
+                    if(m_MoveSound)
+                        PlayJumpSound();
                     m_Jump = false;
                     m_Jumping = true;
                 }
@@ -155,8 +159,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             m_NextStep = m_StepCycle + m_StepInterval;
-
-            PlayFootStepAudio();
+            if(m_MoveSound)
+                PlayFootStepAudio();
         }
 
 
@@ -207,6 +211,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
             float vertical = CrossPlatformInputManager.GetAxis("Vertical");
 
+
+
             bool waswalking = m_IsWalking;
 
 #if !MOBILE_INPUT
@@ -236,9 +242,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void RotateView()
         {
-            m_MouseLook.LookRotation (transform, m_Camera.transform);
+            if(m_MouseRotation)
+                m_MouseLook.LookRotation (transform, m_Camera.transform);
         }
 
+        public void SetRotationStatus(bool isRotation)
+        {
+            m_MouseRotation = isRotation;
+        }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
