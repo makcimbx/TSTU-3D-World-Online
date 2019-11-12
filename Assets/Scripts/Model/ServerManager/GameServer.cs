@@ -125,8 +125,9 @@ namespace TSTU.Server
                 otherPlayerList.Clear();
                 for (int i = 0; i < playerMas.Count; i++)
                 {
-                    var otherPlayer = new TSTU.Model.Player(jsonAnswer[i]["id"].AsInt);
-                    Vector3 pos = new Vector3(jsonAnswer[i]["pos_x"].AsFloat, jsonAnswer[i]["pos_y"].AsFloat, jsonAnswer[i]["pos_z"].AsFloat);
+                    var otherPlayer = new TSTU.Model.Player(playerMas[i]["id"].AsInt);
+                    Vector3 pos = new Vector3(playerMas[i]["pos_x"].AsFloat, playerMas[i]["pos_y"].AsFloat, playerMas[i]["pos_z"].AsFloat);
+                    otherPlayer.PositionOnMap = pos;
                     otherPlayerList.Add(otherPlayer);
                 }
             }

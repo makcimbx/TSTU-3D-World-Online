@@ -24,7 +24,7 @@ namespace TSTUVirualWorldServer
         private Form1 form;
         private DataBaseUtils dataBaseUtils;
 
-        private Dictionary<int, IPEndPoint> usersIdIpList = new Dictionary<int, IPEndPoint>();
+        private Dictionary<Player, IPEndPoint> usersIdIpList = new Dictionary<Player, IPEndPoint>();
 
         private UdpClient receiver;
 
@@ -69,7 +69,7 @@ namespace TSTUVirualWorldServer
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                LogMessage(ex.Message);
             }
             finally
             {
@@ -112,13 +112,22 @@ namespace TSTUVirualWorldServer
             LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
 
             JSONObject answer = new JSONObject();
-            if (usersIdIpList.ContainsKey(jsonNode["id"].AsInt))
+            if (new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == jsonNode["id"].AsInt) != null)
             {
                 LogMessage("Информация уже транслируется! ОТМЕНА!");
                 answer["answer"] = false;
             }
             else
             {
+                usersIdIpList.Add(new Player(jsonNode["id"].AsInt), remoteIp);
+
+                //
+                form.listBox1.Invoke(new MethodInvoker(() =>
+                {
+                    form.listBox1.Items.Add(jsonNode["id"].AsInt);
+                }));
+                //
+
                 answer["answer"] = true;
             }
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
@@ -128,37 +137,68 @@ namespace TSTUVirualWorldServer
         {
             LogMessage($"Игрок отправляет свою позицию! Id: {jsonNode["id"]}; PosX: {jsonNode["pos_x"]}; PosY: {jsonNode["pos_y"]}; PosZ: {jsonNode["pos_z"]};");
             LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
-            
-            JSONObject answer = new JSONObject();
-            answer["answer"] = true;
-            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
 
-            List<int> errorIdList = new List<int>();
-            int counter = 0;
-            foreach (var item in usersIdIpList)
+            JSONObject message = new JSONObject();
+            message["state"] = (int)ServerState.PlayerInfoUpdate;
+            Player player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == jsonNode["id"].AsInt);
+            if (player == null)
             {
-                if (string.Equals(item.Value.ToString(), remoteIp.Address.ToString())) continue;
+                LogMessage($"Информация о игроке {jsonNode["id"].AsInt} не найдена!");
+                message["answer"] = false;
+            }
+            else
+            {
+                message["answer"] = true;
 
-                JSONObject message = new JSONObject();
-                message["state"] = (int)ServerState.PlayerInfoUpdate;
-                message["id"] = item.Key;
-                message["pos_x"] = jsonNode["pos_x"];
-                message["pos_y"] = jsonNode["pos_y"];
-                message["pos_z"] = jsonNode["pos_z"];
-                var success = SendMessage(message.ToString(), item.Value.ToString(), remoteIp.Port);
+                player.posX = jsonNode["pos_x"].AsFloat;
+                player.posY = jsonNode["pos_y"].AsFloat;
+                player.posZ = jsonNode["pos_z"].AsFloat;
 
-                if(!success)
+                //
+
+                int selectedId = -1;
+                form.listBox1.Invoke(new MethodInvoker(() =>
                 {
-                    errorIdList.Add(item.Key);
-                }
-                counter++;
-            }
+                    if(form.listBox1.SelectedItem != null)
+                        selectedId = (int)form.listBox1.SelectedItem;
+                }));
 
-            if(errorIdList.Count > 0)
-            {
-                LogMessage($"Не можем отправить информацию {errorIdList.Count} клиентам! ОЧИСТКА ИХ!");
-                errorIdList.ForEach(item => usersIdIpList.Remove(item));
+                if (selectedId != -1)
+                {
+                    Player selectedP = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == selectedId);
+                    if (selectedP == null)
+                    {
+                        form.listBox1.Invoke(new MethodInvoker(() =>
+                        {
+                            form.listBox1.Items.Remove(selectedId);
+                        }));
+                    }
+                    else
+                    {
+                        form.richTextBox1.Invoke(new MethodInvoker(() =>
+                        {
+                            form.richTextBox2.Text = $"PosX: {selectedP.posX}\n PosY: {selectedP.posY}\n PosY: {selectedP.posZ}\n";
+                        }));
+                    }
+                }
+
+                //
+
+                int counter = 0;
+                foreach (var item in usersIdIpList)
+                {
+                    if (item.Key.Id == jsonNode["id"].AsInt) continue;
+
+                    message["player_massive"][counter]["id"] = item.Key.Id;
+                    message["player_massive"][counter]["pos_x"] = item.Key.posX;
+                    message["player_massive"][counter]["pos_y"] = item.Key.posY;
+                    message["player_massive"][counter]["pos_z"] = item.Key.posZ;
+                    counter++;
+                }
+                LogMessage($"Отправляем информацию о {counter} игроках!");
             }
+            
+            SendMessage(message.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
 
         private bool SendMessage(string message ,string remoteAddress, int remotePort)
@@ -172,21 +212,7 @@ namespace TSTUVirualWorldServer
             }
             catch (Exception ex)
             {
-                haveError = true;
-
-                foreach (var item in usersIdIpList)
-                {
-                    if (string.Equals(item.Value.Address.ToString(), remoteAddress))
-                    {
-                        usersIdIpList.Remove(item.Key);
-                        break;
-                    }
-                }
-
-                form.richTextBox1.Invoke(new MethodInvoker(() =>
-                {
-                    form.richTextBox1.Text += $"{ex}\n";
-                }));
+                LogMessage(ex.Message);
             }
             finally
             {
