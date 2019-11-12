@@ -23,9 +23,9 @@ namespace TSTUVirualWorldServer
         {
             InitializeComponent();
 
-            dataBaseEditorForm = new DataBaseEditorForm();
-
             localPort = int.Parse(textBox1.Text);
+
+            dataBaseEditorForm = new DataBaseEditorForm();
             
             gameServer = new GameServer(this, localPort, dataBaseEditorForm.usersTableAdapter);
         }
