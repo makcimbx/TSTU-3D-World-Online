@@ -42,7 +42,7 @@ public class PlayerOnlineController : MonoBehaviour
 
             foreach (var item in toDestroyList)
             {
-                Destroy(item.Value);
+                Destroy(item.Value.gameObject);
                 playerList.Remove(item.Key);
             }
 
