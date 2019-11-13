@@ -7,8 +7,8 @@ public class InventorySlot : MonoBehaviour
 {
     public Image icon;
     public Button button;
+    public ItemButton itemButton;
     private Item item;
-    private Image clone;
 
     public void AddItem(Item item)
     {
@@ -23,7 +23,6 @@ public class InventorySlot : MonoBehaviour
         item = null;
         icon.sprite = null;
         icon.enabled = false;
-
         button.interactable = false;
     }
 
