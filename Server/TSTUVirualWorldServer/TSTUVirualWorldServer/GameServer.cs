@@ -182,35 +182,35 @@ namespace TSTUVirualWorldServer
 
                 //
 
-                //
+                ////
 
-                int selectedId = -1;
-                form.listBox1.Invoke(new MethodInvoker(() =>
-                {
-                    if(form.listBox1.SelectedItem != null)
-                        selectedId = (int)form.listBox1.SelectedItem;
-                }));
+                //int selectedId = -1;
+                //form.listBox1.Invoke(new MethodInvoker(() =>
+                //{
+                //    if(form.listBox1.SelectedItem != null)
+                //        selectedId = (int)form.listBox1.SelectedItem;
+                //}));
 
-                if (selectedId != -1)
-                {
-                    Player selectedP = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == selectedId);
-                    if (selectedP == null)
-                    {
-                        form.listBox1.Invoke(new MethodInvoker(() =>
-                        {
-                            form.listBox1.Items.Remove(selectedId);
-                        }));
-                    }
-                    else
-                    {
-                        form.richTextBox1.Invoke(new MethodInvoker(() =>
-                        {
-                            form.richTextBox2.Text = $"PosX: {selectedP.posX}\n PosY: {selectedP.posY}\n PosY: {selectedP.posZ}\n";
-                        }));
-                    }
-                }
+                //if (selectedId != -1)
+                //{
+                //    Player selectedP = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == selectedId);
+                //    if (selectedP == null)
+                //    {
+                //        form.listBox1.Invoke(new MethodInvoker(() =>
+                //        {
+                //            form.listBox1.Items.Remove(selectedId);
+                //        }));
+                //    }
+                //    else
+                //    {
+                //        form.richTextBox1.Invoke(new MethodInvoker(() =>
+                //        {
+                //            form.richTextBox2.Text = $"PosX: {selectedP.posX}\n PosY: {selectedP.posY}\n PosY: {selectedP.posZ}\n";
+                //        }));
+                //    }
+                //}
 
-                //
+                ////
 
                 int counter = 0;
                 foreach (var item in usersIdIpList)
