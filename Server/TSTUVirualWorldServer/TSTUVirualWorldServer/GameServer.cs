@@ -135,8 +135,8 @@ namespace TSTUVirualWorldServer
 
         private void UpdatePlayerInfoStream(JSONNode jsonNode, IPEndPoint remoteIp)
         {
-            LogMessage($"Игрок отправляет свою позицию! Id: {jsonNode["id"]}; PosX: {jsonNode["pos_x"]}; PosY: {jsonNode["pos_y"]}; PosZ: {jsonNode["pos_z"]};");
-            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+            //LogMessage($"Игрок отправляет свою позицию! Id: {jsonNode["id"]}; PosX: {jsonNode["pos_x"]}; PosY: {jsonNode["pos_y"]}; PosZ: {jsonNode["pos_z"]};");
+            //LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
 
             JSONObject message = new JSONObject();
             message["state"] = (int)ServerState.PlayerInfoUpdate;

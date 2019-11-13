@@ -14,53 +14,57 @@ public class PlayerOnlineController : MonoBehaviour
     {
         await GameController.Instance.GameServer.StartPlayerInfoStream();
 
-        GameController.Instance.OnSecondPassed.Subscribe(_ => UpdateInfo()).AddTo(this);
+        UpdateInfo();
+        //GameController.Instance.OnSecondPassed.Subscribe(_ => UpdateInfo()).AddTo(this);
     }
 
     private async void UpdateInfo()
     {
-        GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
-        await GameController.Instance.GameServer.UpdatePlayerInfoStream();
-
-        var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
-        Dictionary<TSTU.Model.Player, Transform> toDestroyList = new Dictionary<TSTU.Model.Player, Transform>();
-        foreach (var item in playerList)
+        while(true)
         {
-            var spawnedPlayer = otherPlayerList.Find(player => player.Id == item.Key.Id);
-            if (spawnedPlayer != null)
-            {
-                item.Value.position = spawnedPlayer.PositionOnMap;
-            }
-            else
-            {
-                toDestroyList.Add(item.Key, item.Value);
-            }
-        }
+            GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
+            await GameController.Instance.GameServer.UpdatePlayerInfoStream();
 
-        foreach (var item in toDestroyList)
-        {
-            Destroy(item.Value);
-            playerList.Remove(item.Key);
-        }
-
-        foreach (var item in otherPlayerList)
-        {
-            TSTU.Model.Player spawnedPlayer = null;
-            foreach (var spawnedplayers in playerList)
+            var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
+            Dictionary<TSTU.Model.Player, Transform> toDestroyList = new Dictionary<TSTU.Model.Player, Transform>();
+            foreach (var item in playerList)
             {
-                if (spawnedplayers.Key.Id == item.Id)
+                var spawnedPlayer = otherPlayerList.Find(player => player.Id == item.Key.Id);
+                if (spawnedPlayer != null)
                 {
-                    spawnedPlayer = spawnedplayers.Key;
-                    break;
+                    item.Value.position = spawnedPlayer.PositionOnMap;
+                }
+                else
+                {
+                    toDestroyList.Add(item.Key, item.Value);
                 }
             }
 
-            if (spawnedPlayer == null)
+            foreach (var item in toDestroyList)
             {
-                var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
-                var player = new TSTU.Model.Player(item.Id);
-                player.PositionOnMap = item.PositionOnMap;
-                playerList.Add(player, controller);
+                Destroy(item.Value);
+                playerList.Remove(item.Key);
+            }
+
+            foreach (var item in otherPlayerList)
+            {
+                TSTU.Model.Player spawnedPlayer = null;
+                foreach (var spawnedplayers in playerList)
+                {
+                    if (spawnedplayers.Key.Id == item.Id)
+                    {
+                        spawnedPlayer = spawnedplayers.Key;
+                        break;
+                    }
+                }
+
+                if (spawnedPlayer == null)
+                {
+                    var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+                    var player = new TSTU.Model.Player(item.Id);
+                    player.PositionOnMap = item.PositionOnMap;
+                    playerList.Add(player, controller);
+                }
             }
         }
     }
