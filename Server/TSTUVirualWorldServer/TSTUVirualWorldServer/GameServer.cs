@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using SimpleJSON;
 
@@ -25,6 +26,7 @@ namespace TSTUVirualWorldServer
         private DataBaseUtils dataBaseUtils;
 
         private Dictionary<Player, IPEndPoint> usersIdIpList = new Dictionary<Player, IPEndPoint>();
+        private Dictionary<Player, System.Timers.Timer> usersTimeoutList = new Dictionary<Player, System.Timers.Timer>();
 
         private UdpClient receiver;
 
@@ -154,6 +156,32 @@ namespace TSTUVirualWorldServer
                 player.posY = jsonNode["pos_y"].AsFloat;
                 player.posZ = jsonNode["pos_z"].AsFloat;
 
+                // TimeOut
+
+                System.Timers.Timer beforeTimer = null;
+                Player beforePlayer = null;
+                foreach (var item in usersTimeoutList)
+                {
+                    if(item.Key.Id == player.Id)
+                    {
+                        beforeTimer = item.Value;
+                        beforePlayer = item.Key;
+                        break;
+                    }
+                }
+                if(beforeTimer != null)
+                {
+                    beforeTimer.Stop();
+                    usersTimeoutList.Remove(beforePlayer);
+                }
+
+                var _countdownTimer = new System.Timers.Timer(1000);
+                _countdownTimer.Elapsed += ((x,y) => RemovePlayer(player));
+                _countdownTimer.Start();
+                usersTimeoutList.Add(player, _countdownTimer);
+
+                //
+
                 //
 
                 int selectedId = -1;
@@ -195,7 +223,7 @@ namespace TSTUVirualWorldServer
                     message["player_massive"][counter]["pos_z"] = item.Key.posZ;
                     counter++;
                 }
-                LogMessage($"Отправляем информацию о {counter} игроках!");
+                //LogMessage($"Отправляем информацию о {counter} игроках!");
             }
             
             SendMessage(message.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
@@ -227,6 +255,27 @@ namespace TSTUVirualWorldServer
             {
                 form.richTextBox1.Text += $"{message}\n";
             }));
+        }
+
+        private void RemovePlayer(Player player)
+        {
+            Player playerToRemove = null;
+            foreach (var item in usersIdIpList)
+            {
+                if(item.Key.Id == player.Id)
+                {
+                    playerToRemove = item.Key;
+                    break;
+                }
+            }
+            if (playerToRemove != null)
+            {
+                form.listBox1.Invoke(new MethodInvoker(() =>
+                {
+                    form.listBox1.Items.Remove(playerToRemove.Id);
+                }));
+                usersIdIpList.Remove(playerToRemove);
+            }
         }
     }
 }
