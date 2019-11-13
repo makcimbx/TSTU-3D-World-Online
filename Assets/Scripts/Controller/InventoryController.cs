@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 namespace TSTU.Controller
 {
@@ -21,16 +22,22 @@ namespace TSTU.Controller
             onInventoryChange();
         }
 
-        //public Item GetAndClearItem()
-        //{
-        //    onInventoryChange();
+        public Item GetAndClearItem()
+        {
+           
+            Item item = dragItem.GetAndClearItem();
+            onInventoryChange();
 
-        //}
+            return item;
+        }
 
-        //public Item GetItem()
-        //{
+        public Item GetItem()
+        {
+            Item item = dragItem.GetItem();
+            onInventoryChange();
 
-        //}
+            return item;            
+        }
 
         void Start()
         {
@@ -40,35 +47,74 @@ namespace TSTU.Controller
 
             foreach (var item in slots)
             {                
-                item.itemButton.onButtonDrag += item.OnButtonDrag;
+                //item.itemButton.onButtonDrag += item.OnButtonDrag;
+                //item.itemButton.onButtonDragEnd += item.OnButtonDragEnd;
                 item.onButtonDrag += OnDrag;
-                item.itemButton.onButtonDragEnd += item.OnButtonDragEnd;
+                item.onButtonDragEnd += OnDragEnd;
+                item.onPointerEnter += OnEnter;
+                item.onPointerExit += OnExit;
+
+
             }
 
         }
 
-        bool drag = false;
+        public InventorySlot dragItem = null;
+        public InventorySlot dragSelected = null;
 
-        void OnDrag(InventorySlot slot)
+        public bool Drag = false;
+
+
+        private void OnDrag(InventorySlot slot)
         {
-            if (!drag)
+            if (dragItem == null)
+                dragItem = slot;
+
+            if (!Drag)
             {
-                slot.gameObject.transform.SetParent(itemDrag);
-                drag = true;
+                dragItem.icon.gameObject.transform.SetParent(itemDrag);
+                //OnExit(slot);                
+                Drag = true;
             }
-        }
-        
-      
-        void OnDragEnd(InventorySlot slot)
-        {
-            slot.gameObject.transform.SetParent(itemsParent);
-            drag = false;
+            dragItem.icon.transform.position = Input.mousePosition;
+            
         }
 
+        private void OnDragEnd(InventorySlot slot)
+        {
+            dragItem.icon.transform.position = dragItem.transform.position;
+            dragItem.icon.gameObject.transform.SetParent(dragItem.itemButton.transform);
 
-        void Update()
+            Debug.Log("OnDragEnd");
+
+            if (dragSelected != null)
+            {
+                dragItem.gameObject.transform.SetSiblingIndex(0);
+                //dragSelected.gameObject.transform.GetSiblingIndex()
+            }
+            dragItem = null;
+            Drag = false;
+        }
+
+        private void OnEnter(InventorySlot slot)
         {
 
+            dragSelected = slot;
+
+
+            Debug.Log("OnEnter" + slot.gameObject.transform.GetSiblingIndex());
+
+            //if (dragItem.Equals(slot))
+            //    {
+
+            //    }
+        }
+
+        private void OnExit(InventorySlot slot)
+        {
+            if (dragSelected != null)
+                dragSelected = null;
+            Debug.Log("OnExit" + slot.gameObject.transform.GetSiblingIndex());
 
         }
 
@@ -76,7 +122,7 @@ namespace TSTU.Controller
         {
             for (int i = 0; i < slots.Length; i++)
             {
-                if (i<inventory.Count)
+                if (i < inventory.Count)
                 {
                     slots[i].AddItem(inventory[i]);
                 }
