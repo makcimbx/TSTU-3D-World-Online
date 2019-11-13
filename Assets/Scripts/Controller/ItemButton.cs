@@ -2,12 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using UnityEditor.UI;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System;
 
-public class ItemButton : MonoBehaviour
+public class ItemButton : EventTrigger
 {
-    private void OnMouseDown()
+    public event Action onButtonDrag, onButtonDragEnd;
+
+    public override void OnDrag(PointerEventData eventData)
     {
-        Debug.Log("12");
+        onButtonDrag();
+    }
+
+    public override void OnEndDrag(PointerEventData eventData)
+    {
+        onButtonDragEnd();
     }
 }
+

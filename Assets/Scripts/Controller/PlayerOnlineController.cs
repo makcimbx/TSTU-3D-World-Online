@@ -20,7 +20,7 @@ public class PlayerOnlineController : MonoBehaviour
 
     private async void UpdateInfo()
     {
-        while(true)
+        while (true)
         {
             GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
             await GameController.Instance.GameServer.UpdatePlayerInfoStream();
@@ -67,5 +67,6 @@ public class PlayerOnlineController : MonoBehaviour
                 }
             }
         }
+
     }
 }

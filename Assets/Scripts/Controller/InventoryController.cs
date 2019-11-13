@@ -8,14 +8,13 @@ namespace TSTU.Controller
     {
         private GameObject panel;
         public Transform itemsParent;
+        public Transform itemDrag;
         public InventorySlot[] slots;
 
         public event Action onInventoryChange;
-        List<Item> inventory = new List<Item>();
 
+        private List<Item> inventory = new List<Item>();
 
-        
-        
         public void addItem(Item gameObject)
         {
             inventory.Add(gameObject);
@@ -38,7 +37,34 @@ namespace TSTU.Controller
             onInventoryChange += UpdateUI;
             slots = itemsParent.GetComponentsInChildren<InventorySlot>();
 
+
+            foreach (var item in slots)
+            {                
+                item.itemButton.onButtonDrag += item.OnButtonDrag;
+                item.onButtonDrag += OnDrag;
+                item.itemButton.onButtonDragEnd += item.OnButtonDragEnd;
+            }
+
         }
+
+        bool drag = false;
+
+        void OnDrag(InventorySlot slot)
+        {
+            if (!drag)
+            {
+                slot.gameObject.transform.SetParent(itemDrag);
+                drag = true;
+            }
+        }
+        
+      
+        void OnDragEnd(InventorySlot slot)
+        {
+            slot.gameObject.transform.SetParent(itemsParent);
+            drag = false;
+        }
+
 
         void Update()
         {
@@ -72,5 +98,9 @@ namespace TSTU.Controller
         {
             panel.SetActive(v);
         }
+
+
+
+
     }
 }
