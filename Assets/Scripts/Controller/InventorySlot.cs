@@ -6,54 +6,61 @@ using UnityEngine.UI;
 
 public class InventorySlot : MonoBehaviour
 {
+    [SerializeField]
     public Image icon;
-    public ItemButton itemButton;
-
+    [SerializeField]
+    public GameObject itemButton;
     private Item item;    
 
     public event Action<InventorySlot> onButtonDrag, onButtonDragEnd, onPointerEnter, onPointerExit;
     
     private void Start()
     {
-        itemButton.slot = this;
+        EventTrigger trigger = itemButton.GetComponent<EventTrigger>();
 
-        itemButton.onButtonDrag += OnButtonDrag;
-        itemButton.onButtonDragEnd += OnButtonDragEnd;
-        itemButton.onPointerEnter += OnPointerEnter;
-        itemButton.onPointerExit += OnPointerExit;
+        EventTrigger.Entry drag = new EventTrigger.Entry(),
+                           dragEnd = new EventTrigger.Entry(),
+                           pointerEnter = new EventTrigger.Entry(),
+                           pointerExit = new EventTrigger.Entry();
 
+        
+        drag.eventID = EventTriggerType.Drag;
+        dragEnd.eventID = EventTriggerType.EndDrag;
+        pointerEnter.eventID = EventTriggerType.PointerEnter;
+        pointerExit.eventID = EventTriggerType.PointerExit;
+
+        drag.callback.AddListener((x) => OnButtonDrag());
+        dragEnd.callback.AddListener((x) => OnButtonDragEnd());
+        pointerEnter.callback.AddListener((x) => OnPointerEnter());
+        pointerExit.callback.AddListener((x) => OnPointerExit());
+
+        trigger.triggers.AddRange(
+            new EventTrigger.Entry[] { drag, dragEnd, pointerEnter, pointerExit });
     }
 
     public void OnButtonDrag()
     {      
-        if (icon != null && item != null)        
-            onButtonDrag?.Invoke(this);
-        icon.useGUILayout = false;
-        icon.useSpriteMesh = false;
-
-
-
+        //if (icon != null && item != null)        
+        onButtonDrag?.Invoke(this);
     }
 
     public void OnButtonDragEnd()
-    {      
-        if (icon != null && item != null)               
-            onButtonDragEnd?.Invoke(this);
-
-        itemButton.gameObject.layer = 0;
+    {
+        //if (icon != null && item != null)               
+        onButtonDragEnd?.Invoke(this);     
 
     }
 
     public void OnPointerEnter()
     {
-        if (icon != null && item != null)
-            onPointerEnter?.Invoke(this);
+        //if (icon != null && item != null)
+        onPointerEnter?.Invoke(this);
     }
 
     public void OnPointerExit()
     {
-        if (icon != null && item != null)
-            onPointerExit?.Invoke(this);
+        //if (icon != null && item != null)
+        onPointerExit?.Invoke(this);
     }
 
     public void AddItem(Item item)
@@ -61,7 +68,6 @@ public class InventorySlot : MonoBehaviour
         this.item = item;
         icon.sprite = item.icon;
         icon.enabled = true;
-       // button.interactable = true;
     }
 
     public Item GetItem()
@@ -83,7 +89,6 @@ public class InventorySlot : MonoBehaviour
         item = null;
         icon.sprite = null;
         icon.enabled = false;
-        //button.interactable = false;
     }
 
    

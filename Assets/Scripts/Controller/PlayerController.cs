@@ -12,12 +12,10 @@ namespace TSTU.Controller
     {
         [Header("Панель инвентаря")]
         [SerializeField] private GameObject panel;
+        
 
         private FirstPersonController firstPersonController;
         private InventoryController inventoryController;
-
-
-
         private StateView stateView = StateView.none;
 
         public enum StateView
@@ -104,6 +102,14 @@ namespace TSTU.Controller
                         }
                     }
                 }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Delete))
+            {
+                Item item = inventoryController.GetAndClearItem();
+                item.transform.position = transform.position;
+                item.gameObject.SetActive(true);
+
             }
 
         }
