@@ -8,42 +8,75 @@ namespace TSTU.Controller
     public class InventoryController : MonoBehaviour
     {
         private GameObject panel;
-        public Transform itemsParent;
-        public Transform itemDrag;
-        public InventorySlot[] slots;
+        private InventorySlot[] slots;
 
-        public event Action onInventoryChange;
+        private event Action OnInventoryChange;
 
-        private List<Item> inventory = new List<Item>();
+        public List<Item> inventory = new List<Item>();     
 
-        public void addItem(Item gameObject)
+        private InventorySlot dragItem = null;
+        private InventorySlot selectedItem = null;
+
+        private StateInventory state = StateInventory.none;
+
+        private enum StateInventory
         {
-            inventory.Add(gameObject);
-            onInventoryChange();
+            none,
+            drag,
+            dragAndSelect,
+            select
+        }
+               
+        internal void AddItem(Item item)
+        {
+            inventory.Add(item);       
+            item.gameObject.SetActive(false);
+            OnInventoryChange();
         }
 
-        public Item GetAndClearItem()
+        internal Item GetAndClearItem()
+        {          
+            return GetAndClearItem(selectedItem);
+        }
+
+        private Item GetAndClearItem(InventorySlot slot)
         {
-           
-            Item item = selectedItem.GetAndClearItem();
+            Item item = slot.GetAndClearItem();
             inventory.Remove(item);
-            onInventoryChange();
+
+            if (!item.instantiate)
+            {
+                var obj = Instantiate(item.gameObject, transform.position, Quaternion.identity);
+                obj.GetComponent<Item>().instantiate = true;
+            }
+            else
+            {
+                item.gameObject.SetActive(true);
+                item.transform.position = transform.position;
+            }
+
+            OnInventoryChange();
 
             return item;
         }
 
-        public Item GetItem()
+        internal void SetInventoryPanel(GameObject panel)
+        {
+            this.panel = panel;
+        }
+
+        internal Item GetItem()
         {
             Item item = selectedItem.GetItem();
-            onInventoryChange();
+            OnInventoryChange();
 
             return item;            
         }
 
         void Start()
         {
-            onInventoryChange += UpdateUI;
-            slots = itemsParent.GetComponentsInChildren<InventorySlot>();
+          
+            slots = panel.GetComponentsInChildren<InventorySlot>();
 
 
             foreach (var item in slots)
@@ -53,73 +86,88 @@ namespace TSTU.Controller
                 item.onPointerEnter += OnEnter;
                 item.onPointerExit += OnExit;
             }
-
+            OnInventoryChange += UpdateUI;
+            OnInventoryChange();
         }
-
-        public InventorySlot dragItem = null;
-        public InventorySlot selectedItem = null;
-        public bool Drag = false;
-
+        
         private void OnDrag(InventorySlot slot)
         {
-            if (dragItem == null)
-                dragItem = slot;
 
-            if (!Drag)
+            if (state == StateInventory.select)
             {
-                var color = dragItem.icon.color;
-                color.a = 0.3f;
-                dragItem.icon.color = color;
+                if (!slot.isEmpty)
+                {
+                    dragItem = slot;
 
-                Cursor.SetCursor((Texture2D)dragItem.icon.sprite.texture, Vector2.zero, CursorMode.ForceSoftware);               
+                    var color = dragItem.icon.color;
+                    color.a = 0.3f;
+                    dragItem.icon.color = color;
+                    Cursor.SetCursor((Texture2D)dragItem.icon.sprite.texture, Vector2.zero, CursorMode.ForceSoftware);
 
-                Drag = true;
+                    state = StateInventory.dragAndSelect;
+                }
             }
+            Debug.Log("OnDrag " + state);
+
             //dragItem.icon.transform.position = Input.mousePosition;
-            
+
         }
 
         private void OnDragEnd(InventorySlot slot)
         {
-            dragItem.icon.transform.position = dragItem.transform.position;
-           // dragItem.icon.gameObject.transform.SetParent(dragItem.icon.transform);
-                    
 
-            if (selectedItem != null && dragItem != null)
+            //dragItem.icon.transform.position = dragItem.transform.position;
+            if (state == StateInventory.dragAndSelect)
             {
                 var index = dragItem.gameObject.transform.GetSiblingIndex();
                 dragItem.gameObject.transform.SetSiblingIndex(selectedItem.gameObject.transform.GetSiblingIndex());
                 selectedItem.gameObject.transform.SetSiblingIndex(index);
+                state = StateInventory.select;
             }
-            else if (selectedItem == null)
+            else if (state == StateInventory.drag)
             {
-                Item item = dragItem.GetAndClearItem();
-                inventory.Remove(item);
-                onInventoryChange();
-                item.gameObject.SetActive(true);
-                item.transform.position = transform.position;
+                Item item = GetAndClearItem(dragItem);
+                state = StateInventory.none;
             }
 
-
-
-            var color = dragItem.icon.color;
-            color.a = 1f;
-            dragItem.icon.color = color;
+            if(dragItem != null)
+            {
+                var color = dragItem.icon.color;
+                color.a = 1f;
+                dragItem.icon.color = color;
+            }
+            
+                             
+            dragItem = null;
+            Debug.Log("OnDragEnd " + state);
 
             Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
-            dragItem = null;
-            Drag = false;
         }
 
         private void OnEnter(InventorySlot slot)
-        {            
+        {
+
             selectedItem = slot;
+
+            if (state == StateInventory.none)
+                state = StateInventory.select;
+            else if (state == StateInventory.drag)
+                state = StateInventory.dragAndSelect;
+            Debug.Log("OnEnter " + state);
+
         }
 
         private void OnExit(InventorySlot slot)
-        {          
-            if (selectedItem != null)
-                selectedItem = null;
+        {
+
+            selectedItem = null;
+
+            if (state == StateInventory.dragAndSelect)
+                state = StateInventory.drag;
+            else if (state == StateInventory.select)
+                state = StateInventory.none;
+            Debug.Log("OnExit " + state);
+
         }
 
         public void UpdateUI()
@@ -136,17 +184,10 @@ namespace TSTU.Controller
                 }
             }
         }
-
-        public void InventoryPanel(GameObject panel)
-        {
-            this.panel = panel;
-            var child = panel.transform.GetChild(panel.transform.childCount - 1);
-
-        }
-
+            
         internal void SetActive(bool v)
         {
-            panel.SetActive(v);
+            panel?.gameObject.SetActive(v);
         }
 
 

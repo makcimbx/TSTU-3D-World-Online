@@ -12,6 +12,14 @@ public class InventorySlot : MonoBehaviour
     public GameObject itemButton;
     private Item item;    
 
+    public bool isEmpty
+    {
+        get
+        {
+            return item == null;
+        }
+    }
+
     public event Action<InventorySlot> onButtonDrag, onButtonDragEnd, onPointerEnter, onPointerExit;
     
     private void Start()
@@ -82,7 +90,7 @@ public class InventorySlot : MonoBehaviour
         Item item = this.item;
         ClearSlot();
         return item;
-    }
+    }    
 
     public void ClearSlot()
     {

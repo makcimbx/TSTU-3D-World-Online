@@ -32,7 +32,7 @@ namespace TSTU.Controller
             firstPersonController = GetComponent<FirstPersonController>();
 
             Cursor.lockState = CursorLockMode.Locked;
-            inventoryController.InventoryPanel(panel);
+            inventoryController.SetInventoryPanel(panel);
             inventoryController.SetActive(false);
             
 
@@ -93,23 +93,15 @@ namespace TSTU.Controller
                 {
                     if (hit.distance <= 3.5f) {
                         Item item;
-                        if (hit.collider.TryGetComponent<Item>(out item))
-                        {
-                            //Debug.Log(hit.collider.gameObject.name);
-
-                            inventoryController.addItem(item);
-                            hit.collider.gameObject.SetActive(false);
-                        }
+                        if (hit.collider.TryGetComponent<Item>(out item))                        
+                            inventoryController.AddItem(item);                        
                     }
                 }
             }
 
             if (Input.GetKeyDown(KeyCode.Delete))
             {
-                Item item = inventoryController.GetAndClearItem();
-                item.transform.position = transform.position;
-                item.gameObject.SetActive(true);
-
+                Item item = inventoryController.GetAndClearItem();              
             }
 
         }

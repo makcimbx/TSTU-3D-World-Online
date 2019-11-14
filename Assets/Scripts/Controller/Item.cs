@@ -6,5 +6,7 @@ using UnityEngine.UI;
 public class Item : MonoBehaviour
 {
     public Sprite icon;
+    public bool instantiate = false;
+    public int price = 0;
 
 }
