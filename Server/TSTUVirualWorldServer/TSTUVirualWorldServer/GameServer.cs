@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -16,7 +17,8 @@ namespace TSTUVirualWorldServer
         Login = 1,
         Registration,
         StartPlayerInfoUpdate,
-        PlayerInfoUpdate
+        PlayerInfoUpdate,
+        UpdatePlayerModels
     }
 
     public class GameServer
@@ -66,6 +68,10 @@ namespace TSTUVirualWorldServer
                     else if(state == 4)
                     {
                         UpdatePlayerInfoStream(jsonMessage, remoteIp);
+                    }
+                    else if (state == 5)
+                    {
+                        UpdatePlayerModelsStream(jsonMessage, remoteIp);
                     }
                 }
             }
@@ -121,7 +127,10 @@ namespace TSTUVirualWorldServer
             }
             else
             {
-                usersIdIpList.Add(new Player(jsonNode["id"].AsInt), remoteIp);
+                Player player = new Player(jsonNode["id"].AsInt);
+                player.playerModel = jsonNode["model"].GetStringOrDefault(string.Empty);
+                player.modelMD5Hash = GetMd5Hash(MD5.Create(), player.playerModel);
+                usersIdIpList.Add(player, remoteIp);
 
                 //
                 form.listBox1.Invoke(new MethodInvoker(() =>
@@ -221,12 +230,37 @@ namespace TSTUVirualWorldServer
                     message["player_massive"][counter]["pos_x"] = item.Key.posX;
                     message["player_massive"][counter]["pos_y"] = item.Key.posY;
                     message["player_massive"][counter]["pos_z"] = item.Key.posZ;
+                    message["player_massive"][counter]["model_hash"] = item.Key.modelMD5Hash;
                     counter++;
                 }
                 //LogMessage($"Отправляем информацию о {counter} игроках!");
             }
             
             SendMessage(message.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void UpdatePlayerModelsStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос об обновлении моделей! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var playerList = jsonNode["player_list"].AsArray;
+            for (int i = 0; i < playerList.Count; i++)
+            {
+                int id = playerList[i]["id"].AsInt;
+                Player player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == id);
+                if(player == null)
+                {
+                    answer["answer"] = false;
+                    break;
+                }
+                answer["player_list"][i]["model"] = player.playerModel;
+            }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
 
         private bool SendMessage(string message ,string remoteAddress, int remotePort)
@@ -276,6 +310,27 @@ namespace TSTUVirualWorldServer
                 }));
                 usersIdIpList.Remove(playerToRemove);
             }
+        }
+
+        static string GetMd5Hash(MD5 md5Hash, string input)
+        {
+
+            // Convert the input string to a byte array and compute the hash.
+            byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            // Create a new Stringbuilder to collect the bytes
+            // and create a string.
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data 
+            // and format each one as a hexadecimal string.
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
         }
     }
 }

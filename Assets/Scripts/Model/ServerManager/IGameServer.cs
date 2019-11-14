@@ -5,7 +5,7 @@ namespace TSTU.Server
 {
     public interface IGameServer
     {
-        Task<bool> Login(string login, string password);
+        Task<bool> Login(string login, string password, string model);
         Task<bool> Registration(string login, string password);
         Task<bool> StartPlayerInfoStream();
         Task<bool> UpdatePlayerInfoStream();
