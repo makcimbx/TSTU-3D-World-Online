@@ -97,7 +97,7 @@ namespace TSTU.Controller
                         Item item;
                         if (hit.collider.TryGetComponent<Item>(out item))
                         {
-                            Debug.Log(hit.collider.gameObject.name);
+                            //Debug.Log(hit.collider.gameObject.name);
 
                             inventoryController.addItem(item);
                             hit.collider.gameObject.SetActive(false);

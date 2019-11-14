@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -6,16 +7,66 @@ using UnityEngine.UI;
 public class InventorySlot : MonoBehaviour
 {
     public Image icon;
-    public Button button;
     public ItemButton itemButton;
-    private Item item;
+
+    private Item item;    
+
+    public event Action<InventorySlot> onButtonDrag, onButtonDragEnd, onPointerEnter, onPointerExit;
+    
+    private void Start()
+    {
+        itemButton.onButtonDrag += OnButtonDrag;
+        itemButton.onButtonDragEnd += OnButtonDragEnd;
+        itemButton.onPointerEnter += OnPointerEnter;
+        itemButton.onPointerExit += OnPointerExit;
+
+    }
+
+    public void OnButtonDrag()
+    {      
+        if (icon != null && item != null)        
+            onButtonDrag?.Invoke(this);
+        
+    }
+
+    public void OnButtonDragEnd()
+    {      
+        if (icon != null && item != null)               
+            onButtonDragEnd?.Invoke(this);        
+    }
+
+    public void OnPointerEnter()
+    {
+        if (icon != null && item != null)
+            onPointerEnter?.Invoke(this);
+    }
+
+    public void OnPointerExit()
+    {
+        if (icon != null && item != null)
+            onPointerExit?.Invoke(this);
+    }
 
     public void AddItem(Item item)
     {
         this.item = item;
         icon.sprite = item.icon;
         icon.enabled = true;
-        button.interactable = true;
+       // button.interactable = true;
+    }
+
+    public Item GetItem()
+    {
+        Item item = this.item;        
+        return item;
+    }
+
+
+    public Item GetAndClearItem()
+    {
+        Item item = this.item;
+        ClearSlot();
+        return item;
     }
 
     public void ClearSlot()
@@ -23,11 +74,8 @@ public class InventorySlot : MonoBehaviour
         item = null;
         icon.sprite = null;
         icon.enabled = false;
-        button.interactable = false;
+        //button.interactable = false;
     }
 
-    private void OnDrag()
-    {
-        Debug.Log(123 + "213");
-    }
+   
 }
