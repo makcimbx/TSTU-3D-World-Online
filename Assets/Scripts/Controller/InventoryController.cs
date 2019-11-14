@@ -72,7 +72,7 @@ namespace TSTU.Controller
 
             if (!Drag)
             {
-                dragItem.icon.gameObject.transform.SetParent(itemDrag);
+               // dragItem.icon.gameObject.transform.SetParent(itemDrag);
                 //OnExit(slot);                
                 Drag = true;
             }
@@ -87,18 +87,20 @@ namespace TSTU.Controller
 
             Debug.Log("OnDragEnd");
 
-            if (dragSelected != null)
+            if (dragSelected != null && dragItem != null)
             {
-                dragItem.gameObject.transform.SetSiblingIndex(0);
-                //dragSelected.gameObject.transform.GetSiblingIndex()
+                var index = dragItem.gameObject.transform.GetSiblingIndex();
+                dragItem.gameObject.transform.SetSiblingIndex(dragSelected.gameObject.transform.GetSiblingIndex());
+                dragSelected.gameObject.transform.SetSiblingIndex(index);
             }
+
             dragItem = null;
             Drag = false;
         }
 
         private void OnEnter(InventorySlot slot)
         {
-
+            
             dragSelected = slot;
 
 
@@ -112,6 +114,8 @@ namespace TSTU.Controller
 
         private void OnExit(InventorySlot slot)
         {
+           
+
             if (dragSelected != null)
                 dragSelected = null;
             Debug.Log("OnExit" + slot.gameObject.transform.GetSiblingIndex());

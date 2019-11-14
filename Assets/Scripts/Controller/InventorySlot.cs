@@ -15,6 +15,8 @@ public class InventorySlot : MonoBehaviour
     
     private void Start()
     {
+        itemButton.slot = this;
+
         itemButton.onButtonDrag += OnButtonDrag;
         itemButton.onButtonDragEnd += OnButtonDragEnd;
         itemButton.onPointerEnter += OnPointerEnter;
@@ -26,13 +28,20 @@ public class InventorySlot : MonoBehaviour
     {      
         if (icon != null && item != null)        
             onButtonDrag?.Invoke(this);
-        
+        icon.useGUILayout = false;
+        icon.useSpriteMesh = false;
+
+
+
     }
 
     public void OnButtonDragEnd()
     {      
         if (icon != null && item != null)               
-            onButtonDragEnd?.Invoke(this);        
+            onButtonDragEnd?.Invoke(this);
+
+        itemButton.gameObject.layer = 0;
+
     }
 
     public void OnPointerEnter()

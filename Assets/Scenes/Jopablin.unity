@@ -203,6 +203,9 @@ MonoBehaviour:
   itemsParent: {fileID: 1826418782}
   itemDrag: {fileID: 612087541}
   slots: []
+  dragItem: {fileID: 0}
+  dragSelected: {fileID: 0}
+  Drag: 0
 --- !u!224 &71448450 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1512160859784026807, guid: d5a9958bc006cc94fa8636cf01f1581d,
@@ -6036,6 +6039,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1512160860078353679, guid: d5a9958bc006cc94fa8636cf01f1581d,
+        type: 3}
+      propertyPath: m_RaycastTarget
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d5a9958bc006cc94fa8636cf01f1581d, type: 3}
