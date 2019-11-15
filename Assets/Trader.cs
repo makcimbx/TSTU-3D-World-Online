@@ -18,8 +18,7 @@ namespace TSTU.Controller
 
         public override void Interact()
         {
-            base.Interact();
-            
+            base.Interact();           
         }
 
         

@@ -13,6 +13,8 @@ namespace TSTU.Controller
         {
             Debug.Log("Взаимодействие с " + name);
         }
+
+        
   
     }
 }
