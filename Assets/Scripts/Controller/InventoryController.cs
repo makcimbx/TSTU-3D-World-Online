@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
+
 namespace TSTU.Controller
 {
+    [RequireComponent(typeof(Inventory))]
     public class InventoryController : MonoBehaviour
     {
-        private GameObject panel;
+        private GameObject playerPanel;
+        private GameObject traderPanel;
+
+        private Text[] texts;
+
         private InventorySlot[] slots;
-
-        private event Action OnInventoryChange;
-
-        public List<Item> inventory = new List<Item>();     
-
         private InventorySlot dragItem = null;
         private InventorySlot selectedItem = null;
 
         private StateInventory state = StateInventory.none;
-
         private enum StateInventory
         {
             none,
@@ -26,70 +24,46 @@ namespace TSTU.Controller
             dragAndSelect,
             select
         }
-               
-        internal void AddItem(Item item)
+
+        internal Item GetSelectedItem()
         {
-            inventory.Add(item);       
-            item.gameObject.SetActive(false);
-            OnInventoryChange();
+            return GetItem(selectedItem);
         }
 
-        internal Item GetAndClearItem()
-        {          
-            return GetAndClearItem(selectedItem);
-        }
-
-        private Item GetAndClearItem(InventorySlot slot)
+        private Item GetItem(InventorySlot slot)
         {
             Item item = slot.GetAndClearItem();
-            inventory.Remove(item);
-
-            if (!item.instantiate)
-            {
-                var obj = Instantiate(item.gameObject, transform.position, Quaternion.identity);
-                obj.GetComponent<Item>().instantiate = true;
-            }
-            else
-            {
-                item.gameObject.SetActive(true);
-                item.transform.position = transform.position;
-            }
-
-            OnInventoryChange();
+            Inventory.instance.Remove(item);
+            var obj = Instantiate(item.prefab, transform.position, Quaternion.identity);
 
             return item;
         }
 
-        internal void SetInventoryPanel(GameObject panel)
+        internal void SetInventoryPanels(GameObject playerPanel, GameObject traderPanel)
         {
-            this.panel = panel;
+            this.playerPanel = playerPanel;
+            this.traderPanel = traderPanel;
         }
 
-        internal Item GetItem()
+        private void Start()
         {
-            Item item = selectedItem.GetItem();
-            OnInventoryChange();
 
-            return item;            
-        }
-
-        void Start()
-        {
-          
-            slots = panel.GetComponentsInChildren<InventorySlot>();
-
+            slots = playerPanel.GetComponentsInChildren<InventorySlot>();
+            texts = playerPanel.GetComponentsInChildren<Text>();
 
             foreach (var item in slots)
-            {                            
+            {
                 item.onButtonDrag += OnDrag;
                 item.onButtonDragEnd += OnDragEnd;
                 item.onPointerEnter += OnEnter;
                 item.onPointerExit += OnExit;
             }
-            OnInventoryChange += UpdateUI;
-            OnInventoryChange();
+            Inventory.instance.OnInventoryChange += UpdateUI;
+            UpdateUI();
         }
-        
+
+        #region OnMouse
+
         private void OnDrag(InventorySlot slot)
         {
 
@@ -126,18 +100,18 @@ namespace TSTU.Controller
             }
             else if (state == StateInventory.drag)
             {
-                Item item = GetAndClearItem(dragItem);
+                GetItem(dragItem);
                 state = StateInventory.none;
             }
 
-            if(dragItem != null)
+            if (dragItem != null)
             {
                 var color = dragItem.icon.color;
                 color.a = 1f;
                 dragItem.icon.color = color;
             }
-            
-                             
+
+
             dragItem = null;
             Debug.Log("OnDragEnd " + state);
 
@@ -170,28 +144,37 @@ namespace TSTU.Controller
 
         }
 
+        #endregion
+        
+        public void SetTrader(Trader trader)
+        {
+
+        }
+
         public void UpdateUI()
         {
             for (int i = 0; i < slots.Length; i++)
             {
-                if (i < inventory.Count)
+                if (i < Inventory.instance.Count)
                 {
-                    slots[i].AddItem(inventory[i]);
+                    slots[i].AddItem(Inventory.instance.items[i]);
                 }
                 else
                 {
                     slots[i].ClearSlot();
                 }
             }
+            texts[2].text = $"{Inventory.instance.Money}";
         }
-            
+
         internal void SetActive(bool v)
         {
-            panel?.gameObject.SetActive(v);
+            playerPanel?.gameObject.SetActive(v);
         }
 
-
-
-
+        internal void StartTrading(Trader trader)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -2,17 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Trader : MonoBehaviour
+namespace TSTU.Controller
 {
-    // Start is called before the first frame update
-    void Start()
+    public class Trader : Interacteble
     {
-        
-    }
+        public List<Item> items = new List<Item>();
+        private int money = int.MaxValue;
+        public int Money {
+            get
+            {
+                return money;
+            }
+            private set { }
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
+        public override void Interact()
+        {
+            base.Interact();
+            
+        }
+
         
     }
 }

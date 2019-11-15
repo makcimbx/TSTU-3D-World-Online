@@ -6,23 +6,38 @@ using UnityEngine.UI;
 
 namespace TSTU.Controller
 {
-    [RequireComponent(typeof(InventoryController), typeof(FirstPersonController))]
+    [RequireComponent(
+        typeof(InventoryController), 
+        typeof(FirstPersonController))]
 
     public class PlayerController : MonoBehaviour
     {
+
+
+
+
         [Header("Панель инвентаря")]
-        [SerializeField] private GameObject panel;
-        
+        [SerializeField] private GameObject playerPanel;
+        [Header("Панель отображения торговцев")]
+        [SerializeField] private GameObject traderPanel;
+        [Header("Точка переноса объектов")]
+        [SerializeField] private Transform pointMove;
+        private Transform moveObject;
+        private bool IsСarry = false;
+
 
         private FirstPersonController firstPersonController;
         private InventoryController inventoryController;
-        private StateView stateView = StateView.none;
+
+        private StateView stateView = StateView.None;
+
+       
 
         public enum StateView
         {
-            none,
-            inventory,
-            esc                
+            None,
+            Inventory,
+            Menu
         }
 
 
@@ -32,32 +47,34 @@ namespace TSTU.Controller
             firstPersonController = GetComponent<FirstPersonController>();
 
             Cursor.lockState = CursorLockMode.Locked;
-            inventoryController.SetInventoryPanel(panel);
+            inventoryController.SetInventoryPanels(playerPanel, traderPanel);
             inventoryController.SetActive(false);
             
 
             
         }
+
+        #region Update
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (stateView == StateView.esc)
+                if (stateView == StateView.Menu)
                 {                    
                     Cursor.lockState = CursorLockMode.Locked;
                     firstPersonController.enabled = (true);
-                    stateView = StateView.none;
+                    stateView = StateView.None;
                 }
-                else if (stateView == StateView.inventory)
+                else if (stateView == StateView.Inventory)
                 {
                     inventoryController.SetActive(false);
                     firstPersonController.SetRotationStatus(true);
-                    stateView = StateView.none;
+                    stateView = StateView.None;
                     Cursor.lockState = CursorLockMode.Locked;
                 }
                 else
                 {
-                    stateView = StateView.esc;
+                    stateView = StateView.Menu;
                     firstPersonController.enabled = (false);
                     Cursor.lockState = CursorLockMode.None;
                 }
@@ -67,16 +84,16 @@ namespace TSTU.Controller
             if (Input.GetKeyDown(KeyCode.Tab))
             {
 
-                if (stateView == StateView.inventory)
+                if (stateView == StateView.Inventory)
                 {
                     Cursor.lockState = CursorLockMode.Locked;
                     inventoryController.SetActive(false);
                     firstPersonController.SetRotationStatus(true);
-                    stateView = StateView.none;
+                    stateView = StateView.None;
                 }
-                else if (stateView == StateView.none)
+                else if (stateView == StateView.None)
                 {
-                    stateView = StateView.inventory;
+                    stateView = StateView.Inventory;
                     firstPersonController.SetRotationStatus(false);
                     Cursor.lockState = CursorLockMode.None;
                     inventoryController.SetActive(true);
@@ -86,30 +103,84 @@ namespace TSTU.Controller
 
             if (Input.GetKeyDown(KeyCode.F))
             {
-                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-
-                if (Physics.Raycast(ray,out hit))
+                if (stateView == StateView.None)
                 {
-                    if (hit.distance <= 3.5f) {
-                        Item item;
-                        if (hit.collider.TryGetComponent<Item>(out item))                        
-                            inventoryController.AddItem(item);                        
+                    var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (hit.distance <= 3.5f)
+                        {
+                            Interacteble item;
+                            if (hit.collider.TryGetComponent(out item))                                
+                                    item.Interact();
+                        }
                     }
                 }
             }
 
             if (Input.GetKeyDown(KeyCode.Delete))
             {
-                Item item = inventoryController.GetAndClearItem();              
+                if(stateView == StateView.Inventory)
+                    inventoryController.GetSelectedItem();              
             }
 
+
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (stateView == StateView.None)
+                {
+                    if (!IsСarry)
+                    {
+                        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        RaycastHit hit;
+
+                        if (Physics.Raycast(ray, out hit))
+                        {
+                            if (hit.distance <= 3.5f)
+                            {
+                                Interacteble item;
+                                if (hit.collider.TryGetComponent(out item))
+                                {
+                                    moveObject = item.transform;
+                                    IsСarry = true;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        IsСarry = false;
+                        moveObject = null;
+
+                    }
+                    
+                }                  
+            }
+
+
+            if (IsСarry)
+            {
+                moveObject.position = pointMove.position;
+            }
+           
+        }
+        #endregion
+
+
+
+        public void StartTrading(Trader trader)
+        {
+
+            inventoryController.StartTrading(trader);
         }
 
+        public void EndTrading()
+        {
 
-
-
-
+        }
     }
 
 }
