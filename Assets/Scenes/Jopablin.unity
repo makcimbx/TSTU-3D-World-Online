@@ -5528,6 +5528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isInteracteble: 1
+  isCarry: 0
   items: []
 --- !u!54 &1363049963
 Rigidbody:
@@ -5570,6 +5571,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isInteracteble: 1
+  isCarry: 1
   item: {fileID: 11400000, guid: d8fcdc090c2c1804da339a2a14fe47f2, type: 2}
 --- !u!1 &1415783167
 GameObject:
