@@ -43,11 +43,6 @@ namespace TSTU.Controller
         {
             this.playerPanel = playerPanel;
             this.traderPanel = traderPanel;
-        }
-
-        private void Start()
-        {
-
             slots = playerPanel.GetComponentsInChildren<InventorySlot>();
             texts = playerPanel.GetComponentsInChildren<Text>();
 

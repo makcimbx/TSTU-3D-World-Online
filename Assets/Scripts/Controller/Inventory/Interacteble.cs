@@ -8,7 +8,7 @@ namespace TSTU.Controller
     public class Interacteble : MonoBehaviour
     {       
         public bool isInteracteble = true;
-
+        public bool isCarry = true;
         public virtual void Interact()
         {
             Debug.Log("Взаимодействие с " + name);
