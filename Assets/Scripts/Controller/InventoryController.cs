@@ -7,22 +7,51 @@ namespace TSTU.Controller
     [RequireComponent(typeof(Inventory))]
     public class InventoryController : MonoBehaviour
     {
-        private GameObject playerPanel;
-        private GameObject traderPanel;
+        [SerializeField] private bool debug = false;
 
-        private Text[] texts;
+        private GameObject playerPanel = null;
+        private GameObject traderPanel = null;
+        private GameObject buyPanel = null;
+        private GameObject sellPanel = null;
 
-        private InventorySlot[] slots;
+        private Trader trader = null;
+
+        private Text[] playerText;
+        private Text[] traderText = null;
+        private Text[] buyText = null;
+        private Text[] sellText = null;
+
+        private InventorySlot[] playerSlots = null;
+        private InventorySlot[] buySlots = null;
+        private InventorySlot[] sellSlots = null;
+        private InventorySlot[] traderSlots = null;
+
         private InventorySlot dragItem = null;
         private InventorySlot selectedItem = null;
 
-        private StateInventory state = StateInventory.none;
-        private enum StateInventory
+        private DragState dragState = DragState.none;
+        private InventoryState inventoryState = InventoryState.None;
+
+        private enum DragState
         {
             none,
             drag,
             dragAndSelect,
             select
+        }
+
+        private enum InventoryState
+        {
+            None,
+            Inventory,            
+            Trade,
+            Search
+        }
+
+
+        private void Start()
+        {
+            Inventory.instance.OnInventoryChange += UpdateUI;
         }
 
         internal Item GetSelectedItem()
@@ -43,22 +72,44 @@ namespace TSTU.Controller
         {
             this.playerPanel = playerPanel;
             this.traderPanel = traderPanel;
+            Initialization();
         }
 
-        private void Start()
+        internal void SetInventoryPanels(GameObject playerPanel, GameObject traderPanel, GameObject buyPanel, GameObject sellPanel)
         {
+            this.playerPanel = playerPanel;
+            this.traderPanel = traderPanel;
+            this.buyPanel = buyPanel;
+            this.sellPanel = sellPanel;
 
-            slots = playerPanel.GetComponentsInChildren<InventorySlot>();
-            texts = playerPanel.GetComponentsInChildren<Text>();
+            Initialization();
+        }
 
-            foreach (var item in slots)
+        private void Initialization()
+        {
+            PanelInit(playerPanel, ref playerSlots, ref playerText);
+            PanelInit(traderPanel, ref traderSlots, ref traderText);
+            PanelInit(buyPanel, ref buySlots, ref buyText);
+            PanelInit(sellPanel, ref sellSlots, ref sellText);
+            StateActivePanel();
+        }
+
+
+        private void PanelInit(GameObject panel, ref InventorySlot[] inventorySlots, ref Text[] texts)
+        {
+            inventorySlots = panel?.GetComponentsInChildren<InventorySlot>();
+            texts = panel?.GetComponentsInChildren<Text>();
+
+            if (inventorySlots != null)
             {
-                item.onButtonDrag += OnDrag;
-                item.onButtonDragEnd += OnDragEnd;
-                item.onPointerEnter += OnEnter;
-                item.onPointerExit += OnExit;
+                foreach (var item in inventorySlots)
+                {
+                    item.onButtonDrag += OnDrag;
+                    item.onButtonDragEnd += OnDragEnd;
+                    item.onPointerEnter += OnEnter;
+                    item.onPointerExit += OnExit;
+                }
             }
-            Inventory.instance.OnInventoryChange += UpdateUI;
             UpdateUI();
         }
 
@@ -67,7 +118,7 @@ namespace TSTU.Controller
         private void OnDrag(InventorySlot slot)
         {
 
-            if (state == StateInventory.select)
+            if (dragState == DragState.select)
             {
                 if (!slot.isEmpty)
                 {
@@ -78,30 +129,27 @@ namespace TSTU.Controller
                     dragItem.icon.color = color;
                     Cursor.SetCursor((Texture2D)dragItem.icon.sprite.texture, Vector2.zero, CursorMode.ForceSoftware);
 
-                    state = StateInventory.dragAndSelect;
+                    dragState = DragState.dragAndSelect;
                 }
             }
-            Debug.Log("OnDrag " + state);
 
-            //dragItem.icon.transform.position = Input.mousePosition;
-
+            if(debug)
+                Debug.Log("OnDrag " + dragState);
         }
 
         private void OnDragEnd(InventorySlot slot)
         {
-
-            //dragItem.icon.transform.position = dragItem.transform.position;
-            if (state == StateInventory.dragAndSelect)
+            if (dragState == DragState.dragAndSelect)
             {
                 var index = dragItem.gameObject.transform.GetSiblingIndex();
                 dragItem.gameObject.transform.SetSiblingIndex(selectedItem.gameObject.transform.GetSiblingIndex());
                 selectedItem.gameObject.transform.SetSiblingIndex(index);
-                state = StateInventory.select;
+                dragState = DragState.select;
             }
-            else if (state == StateInventory.drag)
+            else if (dragState == DragState.drag)
             {
                 GetItem(dragItem);
-                state = StateInventory.none;
+                dragState = DragState.none;
             }
 
             if (dragItem != null)
@@ -111,11 +159,11 @@ namespace TSTU.Controller
                 dragItem.icon.color = color;
             }
 
-
-            dragItem = null;
-            Debug.Log("OnDragEnd " + state);
-
+            dragItem = null;        
             Cursor.SetCursor(null, Vector2.zero, CursorMode.ForceSoftware);
+
+            if (debug)
+                Debug.Log("OnDragEnd " + dragState);
         }
 
         private void OnEnter(InventorySlot slot)
@@ -123,11 +171,12 @@ namespace TSTU.Controller
 
             selectedItem = slot;
 
-            if (state == StateInventory.none)
-                state = StateInventory.select;
-            else if (state == StateInventory.drag)
-                state = StateInventory.dragAndSelect;
-            Debug.Log("OnEnter " + state);
+            if (dragState == DragState.none)
+                dragState = DragState.select;
+            else if (dragState == DragState.drag)
+                dragState = DragState.dragAndSelect;
+            if (debug)
+                Debug.Log("OnEnter " + dragState);
 
         }
 
@@ -136,45 +185,122 @@ namespace TSTU.Controller
 
             selectedItem = null;
 
-            if (state == StateInventory.dragAndSelect)
-                state = StateInventory.drag;
-            else if (state == StateInventory.select)
-                state = StateInventory.none;
-            Debug.Log("OnExit " + state);
+            if (dragState == DragState.dragAndSelect)
+                dragState = DragState.drag;
+            else if (dragState == DragState.select)
+                dragState = DragState.none;
+
+            if (debug)
+                Debug.Log("OnExit " + dragState);
 
         }
 
         #endregion
-        
-        public void SetTrader(Trader trader)
-        {
 
-        }
 
         public void UpdateUI()
         {
-            for (int i = 0; i < slots.Length; i++)
+            for (int i = 0; i < playerSlots.Length; i++)
             {
                 if (i < Inventory.instance.Count)
                 {
-                    slots[i].AddItem(Inventory.instance.items[i]);
+                    playerSlots[i].AddItem(Inventory.instance.items[i]);
                 }
                 else
                 {
-                    slots[i].ClearSlot();
+                    playerSlots[i].ClearSlot();
                 }
             }
-            texts[2].text = $"{Inventory.instance.Money}";
+            playerText[2].text = $"{Inventory.instance.Money}";
+
+            if (debug)
+                Debug.Log("UpdateUI ");
         }
 
-        internal void SetActive(bool v)
+
+
+        internal void OpenInventory()
         {
-            playerPanel?.gameObject.SetActive(v);
+            if (inventoryState == InventoryState.None)
+            {
+                inventoryState = InventoryState.Inventory;
+                playerPanel?.SetActive(true);
+            }
+        }
+
+        internal void CloseAll()
+        {
+            if (inventoryState == InventoryState.Inventory)
+            {
+                inventoryState = InventoryState.None;
+                playerPanel?.SetActive(false);
+            }
+            else if (inventoryState == InventoryState.Trade)
+            {
+                EndTrading();
+            }
+            else if(inventoryState == InventoryState.Search)
+            {
+                if (debug)
+                    Debug.Log("Поиск предметов ещё не готов");
+            }
         }
 
         internal void StartTrading(Trader trader)
         {
-            throw new NotImplementedException();
+            if (inventoryState == InventoryState.None)
+            {
+                inventoryState = InventoryState.Trade;
+                this.trader = trader;
+                StateActivePanel();
+                UpdateUI();
+            }
+
+            if (debug)
+                Debug.Log("Старт торговли");
+        }
+
+        private void EndTrading()
+        {
+            if (inventoryState == InventoryState.Trade)
+            {
+                inventoryState = InventoryState.None;
+                trader = null;
+                StateActivePanel();
+                UpdateUI();
+            }
+
+            if (debug)
+                Debug.Log("Старт конец торговли");
+        }
+
+        private void SetActiveTrading(bool v)
+        {
+            playerPanel.SetActive(v);
+            traderPanel.SetActive(v);
+            buyPanel.SetActive(v);
+            sellPanel.SetActive(v);
+        }
+        
+        private void StateActivePanel()
+        {
+            if (inventoryState == InventoryState.None)
+            {
+                SetActiveTrading(false);
+            }
+            else if (inventoryState == InventoryState.Trade)
+            {
+                SetActiveTrading(true);
+            }
+            else if (inventoryState == InventoryState.Inventory)
+            {
+                playerPanel.SetActive(true);
+            }
+            else if (inventoryState == InventoryState.Search)
+            {
+                if (debug)
+                    Debug.Log("Поиск предметов ещё не готов");
+            }
         }
     }
 }

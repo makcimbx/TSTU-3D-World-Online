@@ -12,17 +12,36 @@ namespace TSTU.Controller
 
     public class PlayerController : MonoBehaviour
     {
-
-
-
-
+        [Space(10)]
         [Header("Панель инвентаря")]
         [SerializeField] private GameObject playerPanel;
-        [Header("Панель отображения торговцев")]
+
+        [Space(10)]
+        [Header("Панель товаров")]
         [SerializeField] private GameObject traderPanel;
-        [Header("Точка переноса объектов")]
+
+        [Space(10)]
+        [Header("Панель покупки")]
+        [SerializeField] private GameObject buyPanel;
+
+        [Space(10)]
+        [Header("Панель продажи")]
+        [SerializeField] private GameObject sellPanel;
+
+        [Space(10)]
+        [Header("Точка для переноса объектов")]
         [SerializeField] private Transform pointMove;
+
+        [Space(10)]
+        [Header("Кнопка назад")]
+        [SerializeField] private Button back;
+
+        [Space(10)]
+        [Header("Кнопка торговать")]
+        [SerializeField] private Button trade;
+
         private Transform moveObject;
+        private Rigidbody moveObjectRb;
         private bool IsСarry = false;
 
 
@@ -30,14 +49,14 @@ namespace TSTU.Controller
         private InventoryController inventoryController;
 
         private StateView stateView = StateView.None;
-
-       
-
+               
         public enum StateView
         {
             None,
             Inventory,
-            Menu
+            Menu,
+            Trade,
+            Search
         }
 
 
@@ -47,27 +66,41 @@ namespace TSTU.Controller
             firstPersonController = GetComponent<FirstPersonController>();
 
             Cursor.lockState = CursorLockMode.Locked;
-            inventoryController.SetInventoryPanels(playerPanel, traderPanel);
-            inventoryController.SetActive(false);
-            
+            inventoryController.SetInventoryPanels(playerPanel, traderPanel, buyPanel, sellPanel);
+            inventoryController.CloseAll();
 
-            
+            back.gameObject.SetActive(false);
+            trade.gameObject.SetActive(false);
+
         }
 
         #region Update
         private void Update()
         {
+            #region Escape
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (stateView == StateView.Menu)
                 {                    
                     Cursor.lockState = CursorLockMode.Locked;
-                    firstPersonController.enabled = (true);
+                    firstPersonController.enabled = true;
                     stateView = StateView.None;
                 }
                 else if (stateView == StateView.Inventory)
                 {
-                    inventoryController.SetActive(false);
+                    inventoryController.OpenInventory();
+                    firstPersonController.SetRotationStatus(true);
+                    stateView = StateView.None;
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
+                else if (stateView == StateView.Trade)
+                {
+                    EndTrading();
+                    firstPersonController.SetRotationStatus(true);
+                }
+                else if (stateView == StateView.Search)
+                {
+                   
                     firstPersonController.SetRotationStatus(true);
                     stateView = StateView.None;
                     Cursor.lockState = CursorLockMode.Locked;
@@ -75,19 +108,20 @@ namespace TSTU.Controller
                 else
                 {
                     stateView = StateView.Menu;
-                    firstPersonController.enabled = (false);
+                    firstPersonController.enabled = false;
                     Cursor.lockState = CursorLockMode.None;
                 }
 
             }
-
+            #endregion
+            #region Tab
             if (Input.GetKeyDown(KeyCode.Tab))
             {
 
                 if (stateView == StateView.Inventory)
                 {
                     Cursor.lockState = CursorLockMode.Locked;
-                    inventoryController.SetActive(false);
+                    inventoryController.CloseAll();
                     firstPersonController.SetRotationStatus(true);
                     stateView = StateView.None;
                 }
@@ -96,11 +130,17 @@ namespace TSTU.Controller
                     stateView = StateView.Inventory;
                     firstPersonController.SetRotationStatus(false);
                     Cursor.lockState = CursorLockMode.None;
-                    inventoryController.SetActive(true);
+                    inventoryController.OpenInventory();
+                }
+                else if (stateView == StateView.Trade)
+                {
+                    EndTrading();
+                    stateView = StateView.None;
                 }
 
             }
-
+            #endregion
+            #region F
             if (Input.GetKeyDown(KeyCode.F))
             {
                 if (stateView == StateView.None)
@@ -114,20 +154,20 @@ namespace TSTU.Controller
                         {
                             Interacteble item;
                             if (hit.collider.TryGetComponent(out item))                                
-                                    item.Interact();
+                                    item.Interact(this);
                         }
                     }
                 }
             }
-
+            #endregion
+            #region Delete
             if (Input.GetKeyDown(KeyCode.Delete))
             {
                 if(stateView == StateView.Inventory)
                     inventoryController.GetSelectedItem();              
             }
-
-
-
+            #endregion
+            #region E
             if (Input.GetKeyDown(KeyCode.E))
             {
                 if (stateView == StateView.None)
@@ -144,8 +184,14 @@ namespace TSTU.Controller
                                 Interacteble item;
                                 if (hit.collider.TryGetComponent(out item))
                                 {
-                                    moveObject = item.transform;
-                                    IsСarry = true;
+                                    if (item.isСarryble)
+                                    {
+                                        moveObject = item.transform;
+                                        IsСarry = true;
+                                     
+                                        moveObject.gameObject.TryGetComponent<Rigidbody>(out moveObjectRb);
+                                        moveObjectRb.Sleep();
+                                    }
                                 }
                             }
                         }
@@ -154,18 +200,28 @@ namespace TSTU.Controller
                     {
                         IsСarry = false;
                         moveObject = null;
-
+                        moveObjectRb.WakeUp();
+                        moveObjectRb = null;
                     }
                     
                 }                  
             }
-
-
             if (IsСarry)
             {
                 moveObject.position = pointMove.position;
             }
-           
+            #endregion
+            #region OnMouseDown
+            if (Input.GetMouseButtonDown(0) && stateView == StateView.None && IsСarry)
+            {
+                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);                
+                IsСarry = false;
+                moveObject = null;
+                moveObjectRb.WakeUp();
+                moveObjectRb.AddForce(ray.direction * 50,ForceMode.Impulse);
+                moveObjectRb = null;
+            }
+            #endregion
         }
         #endregion
 
@@ -173,13 +229,23 @@ namespace TSTU.Controller
 
         public void StartTrading(Trader trader)
         {
-
+            stateView = StateView.Trade;
+            Cursor.lockState = CursorLockMode.None;
+            firstPersonController.enabled = false;
             inventoryController.StartTrading(trader);
+            back.gameObject.SetActive(true);
+            trade.gameObject.SetActive(true);
+
         }
 
         public void EndTrading()
         {
-
+            stateView = StateView.None;
+            Cursor.lockState = CursorLockMode.Locked;
+            firstPersonController.enabled = true;
+            inventoryController.CloseAll();
+            back.gameObject.SetActive(false);
+            trade.gameObject.SetActive(false);
         }
     }
 

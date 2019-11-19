@@ -1,20 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine;
 
-using UnityEngine;
-using UnityEngine.EventSystems;
 namespace TSTU.Controller
 {
     public class Interacteble : MonoBehaviour
     {       
         public bool isInteracteble = true;
+        public bool isСarryble = false;
 
-        public virtual void Interact()
+        public virtual void Interact(PlayerController player)
         {
             Debug.Log("Взаимодействие с " + name);
         }
 
-        
-  
     }
 }

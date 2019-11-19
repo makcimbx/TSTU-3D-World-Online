@@ -123,4 +123,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isInteracteble: 1
+  "is\u0421arryble": 1
   item: {fileID: 11400000, guid: d8fcdc090c2c1804da339a2a14fe47f2, type: 2}

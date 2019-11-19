@@ -13,6 +13,17 @@ namespace TSTU.Controller
         public GameObject itemButton;
         private Item item;
 
+        public enum Panel
+        {
+            None,
+            Player,
+            Buy,
+            Sell,
+            Trader,
+            Сhest
+
+        }
+
         public bool isEmpty
         {
             get

@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using System.Collections.Generic;
 namespace TSTU.Controller
 {
     public class Trader : Interacteble
@@ -16,9 +13,11 @@ namespace TSTU.Controller
             private set { }
         }
 
-        public override void Interact()
+        public override void Interact(PlayerController player)
         {
-            base.Interact();           
+            base.Interact(player);
+
+            player.StartTrading(this);
         }
 
         

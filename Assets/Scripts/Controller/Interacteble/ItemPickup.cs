@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-namespace TSTU.Controller
+﻿namespace TSTU.Controller
 {
     public class ItemPickup : Interacteble
     {
         public Item item;
-
-        public override void Interact()
+      
+        public override void Interact(PlayerController player)
         {
-            base.Interact();
+            base.Interact(player);
             if (isInteracteble)
             {
                 Inventory.instance.Add(item);
