@@ -72,6 +72,7 @@ namespace TSTU.Controller
         {
             this.playerPanel = playerPanel;
             this.traderPanel = traderPanel;
+
             Initialization();
         }
 
@@ -87,17 +88,18 @@ namespace TSTU.Controller
 
         private void Initialization()
         {
-            PanelInit(playerPanel, ref playerSlots, ref playerText);
-            PanelInit(traderPanel, ref traderSlots, ref traderText);
-            PanelInit(buyPanel, ref buySlots, ref buyText);
-            PanelInit(sellPanel, ref sellSlots, ref sellText);
+            PanelInit(playerPanel, ref playerSlots, ref playerText , InventorySlot.Panel.Player);
+            PanelInit(traderPanel, ref traderSlots, ref traderText, InventorySlot.Panel.Trader);
+            PanelInit(buyPanel, ref buySlots, ref buyText, InventorySlot.Panel.Buy);
+            PanelInit(sellPanel, ref sellSlots, ref sellText, InventorySlot.Panel.Sell);
             StateActivePanel();
         }
 
 
-        private void PanelInit(GameObject panel, ref InventorySlot[] inventorySlots, ref Text[] texts)
+        private void PanelInit(GameObject panel, ref InventorySlot[] inventorySlots, ref Text[] texts, InventorySlot.Panel namePanel)
         {
             inventorySlots = panel?.GetComponentsInChildren<InventorySlot>();
+            
             texts = panel?.GetComponentsInChildren<Text>();
 
             if (inventorySlots != null)
@@ -108,6 +110,7 @@ namespace TSTU.Controller
                     item.onButtonDragEnd += OnDragEnd;
                     item.onPointerEnter += OnEnter;
                     item.onPointerExit += OnExit;
+                    item.panel = namePanel;
                 }
             }
             UpdateUI();
@@ -140,10 +143,28 @@ namespace TSTU.Controller
         private void OnDragEnd(InventorySlot slot)
         {
             if (dragState == DragState.dragAndSelect)
-            {
-                var index = dragItem.gameObject.transform.GetSiblingIndex();
-                dragItem.gameObject.transform.SetSiblingIndex(selectedItem.gameObject.transform.GetSiblingIndex());
-                selectedItem.gameObject.transform.SetSiblingIndex(index);
+            {                
+                if (selectedItem.panel == InventorySlot.Panel.Player)
+                {
+                    //var index = dragItem.gameObject.transform.GetSiblingIndex();
+                    //dragItem.gameObject.transform.SetSiblingIndex(selectedItem.gameObject.transform.GetSiblingIndex());
+                    //selectedItem.gameObject.transform.SetSiblingIndex(index);
+                    Item drag = dragItem.GetAndClearItem();
+                    Item select = selectedItem.GetAndClearItem();
+                    if (select != null)
+                        dragItem.AddItem(select);
+                    selectedItem.AddItem(drag);
+                }
+                else if (selectedItem.panel == InventorySlot.Panel.Sell)
+                {
+                    Item drag = dragItem.GetAndClearItem();
+                    Item select = selectedItem.GetAndClearItem();
+                    if (select != null)
+                        dragItem.AddItem(select);
+                    selectedItem.AddItem(drag);
+
+                }
+
                 dragState = DragState.select;
             }
             else if (dragState == DragState.drag)
@@ -151,8 +172,8 @@ namespace TSTU.Controller
                 if (inventoryState == InventoryState.Inventory) 
                     GetItem(dragItem);
                 dragState = DragState.none;
-
             }
+            
 
             if (dragItem != null)
             {
@@ -266,6 +287,25 @@ namespace TSTU.Controller
         {
             if (inventoryState == InventoryState.Trade)
             {
+
+                for (int i = 0; i < sellSlots.Length; i++)
+                {
+                    if (!sellSlots[i].isEmpty)
+                    {
+                        InventorySlot slot = null;
+
+                        for (int j = 0; j < playerSlots.Length; j++)
+                            if (playerSlots[j].isEmpty)
+                                slot = playerSlots[j];
+
+                        if (slot != null)
+                            slot.AddItem(sellSlots[i].GetAndClearItem());
+                        else
+                            GetItem(sellSlots[i]);
+                    }
+                }
+              
+
                 inventoryState = InventoryState.None;
                 trader = null;
                 StateActivePanel();

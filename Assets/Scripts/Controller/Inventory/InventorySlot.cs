@@ -13,6 +13,7 @@ namespace TSTU.Controller
         public GameObject itemButton;
         private Item item;
 
+        public Panel panel { get; set; } = Panel.None;
         public enum Panel
         {
             None,
@@ -21,7 +22,6 @@ namespace TSTU.Controller
             Sell,
             Trader,
             Сhest
-
         }
 
         public bool isEmpty

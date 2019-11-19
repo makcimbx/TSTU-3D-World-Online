@@ -48,7 +48,7 @@ namespace TSTU.Controller
         private FirstPersonController firstPersonController;
         private InventoryController inventoryController;
 
-        private StateView stateView = StateView.None;
+        [SerializeField] private StateView stateView = StateView.None;
                
         public enum StateView
         {
@@ -88,7 +88,7 @@ namespace TSTU.Controller
                 }
                 else if (stateView == StateView.Inventory)
                 {
-                    inventoryController.OpenInventory();
+                    inventoryController.CloseAll();
                     firstPersonController.SetRotationStatus(true);
                     stateView = StateView.None;
                     Cursor.lockState = CursorLockMode.Locked;

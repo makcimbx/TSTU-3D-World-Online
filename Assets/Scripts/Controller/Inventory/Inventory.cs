@@ -20,14 +20,18 @@ namespace TSTU.Controller
         #endregion
 
         public event Action OnInventoryChange;
-
+        [SerializeField]
         private List<Item> Items = new List<Item>();
 
         public Item[] items { get => Items.ToArray(); }
 
         public int Count { get => Items.Count; }
 
+        public int Size = 54;
+
+
         public int Money = 0;
+        public bool isFull { get { return Count == Size; } }
 
         public void Add(Item item)
         {

@@ -9,8 +9,12 @@
             base.Interact(player);
             if (isInteracteble)
             {
-                Inventory.instance.Add(item);
-                Destroy(gameObject);
+                if (!Inventory.instance.isFull)
+                {
+                    Inventory.instance.Add(item);
+                    Destroy(gameObject);
+                }
+              
             }
 
         }
