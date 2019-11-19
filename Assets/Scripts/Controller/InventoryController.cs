@@ -29,8 +29,8 @@ namespace TSTU.Controller
         private InventorySlot dragItem = null;
         private InventorySlot selectedItem = null;
 
-        private DragState dragState = DragState.none;
-        private InventoryState inventoryState = InventoryState.None;
+        [SerializeField] private DragState dragState = DragState.none;
+        [SerializeField] private InventoryState inventoryState = InventoryState.None;
 
         private enum DragState
         {
@@ -148,8 +148,10 @@ namespace TSTU.Controller
             }
             else if (dragState == DragState.drag)
             {
-                GetItem(dragItem);
+                if (inventoryState == InventoryState.Inventory) 
+                    GetItem(dragItem);
                 dragState = DragState.none;
+
             }
 
             if (dragItem != null)
