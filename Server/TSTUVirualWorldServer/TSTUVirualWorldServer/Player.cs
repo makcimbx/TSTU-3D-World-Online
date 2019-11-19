@@ -14,6 +14,9 @@ namespace TSTUVirualWorldServer
         public float posY;
         public float posZ;
 
+        public string playerModel;
+        public string modelMD5Hash;
+
         public Player(int Id)
         {
             this.Id = Id;

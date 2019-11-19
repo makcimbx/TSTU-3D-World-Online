@@ -8,6 +8,9 @@ namespace TSTU.Model
 
         public Vector3 PositionOnMap;
 
+        public string playerModel;
+        public string playerModelMD5Hash;
+
         public Player(int Id)
         {
             this.Id = Id;

@@ -48,7 +48,7 @@ namespace TSTU.Controller
         public async void OnSignIn()
         {
             Debug.Log($"Отправка сообщения { Login.text} - {Password.text}");
-            var answer = await GameController.Instance.GameServer.Login(Login.text, Password.text);
+            var answer = await GameController.Instance.GameServer.Login(Login.text, Password.text, string.Empty);
             if (answer)
             {
                 Debug.Log($"Вход совершен");
