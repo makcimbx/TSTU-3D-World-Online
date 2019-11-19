@@ -18,7 +18,10 @@ namespace TSTUVirualWorldServer
         Registration,
         StartPlayerInfoUpdate,
         PlayerInfoUpdate,
-        UpdatePlayerModels
+        UpdatePlayerModels,
+        AddEntityInInventory,
+        DropEntityFromInventory,
+        UpdateWorldEntityPositions
     }
 
     public class GameServer
@@ -29,15 +32,19 @@ namespace TSTUVirualWorldServer
 
         private Dictionary<Player, IPEndPoint> usersIdIpList = new Dictionary<Player, IPEndPoint>();
         private Dictionary<Player, System.Timers.Timer> usersTimeoutList = new Dictionary<Player, System.Timers.Timer>();
+        private List<Entity> worldMapEntityList = new List<Entity>();
 
         private UdpClient receiver;
 
-        public GameServer(Form1 form, int localPort, TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter)
+        private long itemEIdCounter;
+
+        public GameServer(Form1 form, int localPort, TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter,
+            TSTUDataBaseDataSetTableAdapters.ItemsTableAdapter itemsTableAdapter)
         {
             this.form = form;
             this.localPort = localPort;
 
-            dataBaseUtils = new DataBaseUtils(usersTableAdapter, form);
+            dataBaseUtils = new DataBaseUtils(usersTableAdapter, itemsTableAdapter, form);
         }
 
         public void StartListening()
@@ -53,25 +60,37 @@ namespace TSTUVirualWorldServer
                     string message = Encoding.UTF8.GetString(data);
                     var jsonMessage = JSON.Parse(message);
                     var state = jsonMessage["state"].AsInt;
-                    if(state == 1)
+                    if(state == (int)ServerState.Login)
                     {
                         ReadLoginMessage(jsonMessage, remoteIp);
                     }
-                    else if(state == 2)
+                    else if(state == (int)ServerState.Registration)
                     {
                         ReadRegistrationMessage(jsonMessage, remoteIp);
                     }
-                    else if(state == 3)
+                    else if(state == (int)ServerState.StartPlayerInfoUpdate)
                     {
                         StartPlayerInfoStream(jsonMessage, remoteIp);
                     }
-                    else if(state == 4)
+                    else if(state == (int)ServerState.PlayerInfoUpdate)
                     {
                         UpdatePlayerInfoStream(jsonMessage, remoteIp);
                     }
-                    else if (state == 5)
+                    else if (state == (int)ServerState.UpdatePlayerModels)
                     {
                         UpdatePlayerModelsStream(jsonMessage, remoteIp);
+                    }
+                    else if (state == (int)ServerState.AddEntityInInventory)
+                    {
+                        AddEntityInInventoryStream(jsonMessage, remoteIp);
+                    }
+                    else if (state == (int)ServerState.DropEntityFromInventory)
+                    {
+                        DropEntityFromInventoryStream(jsonMessage, remoteIp);
+                    }
+                    else if(state == (int)ServerState.UpdateWorldEntityPositions)
+                    {
+                        UpdateWorldEntityPositionsStream(jsonMessage, remoteIp);
                     }
                 }
             }
@@ -130,6 +149,7 @@ namespace TSTUVirualWorldServer
                 Player player = new Player(jsonNode["id"].AsInt);
                 player.playerModel = jsonNode["model"].GetStringOrDefault(string.Empty);
                 player.modelMD5Hash = GetMd5Hash(MD5.Create(), player.playerModel);
+                player.inventory = new Dictionary<int, Entity>();
                 usersIdIpList.Add(player, remoteIp);
 
                 //
@@ -164,6 +184,16 @@ namespace TSTUVirualWorldServer
                 player.posX = jsonNode["pos_x"].AsFloat;
                 player.posY = jsonNode["pos_y"].AsFloat;
                 player.posZ = jsonNode["pos_z"].AsFloat;
+
+                var entityList = jsonNode["entity_list"].AsArray;
+                for (int i = 0; i < entityList.Count; i++)
+                {
+                    var eId = entityList["entity_id"].AsInt;
+                    var item = worldMapEntityList.Find(entity => entity.eId == eId);
+                    item.posX = entityList["pos_x"].AsFloat;
+                    item.posY = entityList["pos_y"].AsFloat;
+                    item.posZ = entityList["pos_z"].AsFloat;
+                }
 
                 // TimeOut
 
@@ -233,6 +263,17 @@ namespace TSTUVirualWorldServer
                     message["player_massive"][counter]["model_hash"] = item.Key.modelMD5Hash;
                     counter++;
                 }
+
+                counter = 0;
+                foreach (var item in worldMapEntityList)
+                {
+                    message["entity_list"][counter]["entity_id"] = item.eId;
+                    message["entity_list"][counter]["item_id"] = item.itemId;
+                    message["entity_list"][counter]["pos_x"] = item.posX;
+                    message["entity_list"][counter]["pos_y"] = item.posY;
+                    message["entity_list"][counter]["pos_z"] = item.posZ;
+                    counter++;
+                }
                 //LogMessage($"Отправляем информацию о {counter} игроках!");
             }
             
@@ -258,6 +299,133 @@ namespace TSTUVirualWorldServer
                     break;
                 }
                 answer["player_list"][i]["model"] = player.playerModel;
+            }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void AddEntityInInventoryStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос о добавлении предмета в инвентарь! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var playerId = jsonNode["id"].AsInt;
+            var itemId = jsonNode["item_id"].AsInt;
+            var eid = jsonNode["entity_id"].AsInt;
+            var price = jsonNode["price"].AsInt;
+            var placeNumber = jsonNode["place_number"].AsInt;
+
+            var player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == playerId);
+            if (eid == -1) // Покупка у NPC
+            {
+                itemEIdCounter++;
+                player.inventory.Add(placeNumber, new Entity(itemEIdCounter, itemId));
+                player.Money -= price;
+            }
+            else // Подбираем из мира
+            {
+                var entity = worldMapEntityList.Find(item => item.eId == eid);
+                worldMapEntityList.Remove(entity);
+                player.inventory.Add(placeNumber, entity);
+            }
+
+            int counter = 0;
+            foreach (var item in player.inventory)
+            {
+                answer["inventory"][counter]["place_number"] = item.Key;
+                answer["inventory"][counter]["entity_id"] = item.Value.eId;
+                answer["inventory"][counter]["item_id"] = item.Value.itemId;
+                counter++;
+            }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void DropEntityFromInventoryStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос о дропе предмета из инвентаря! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var playerId = jsonNode["id"].AsInt;
+            var itemId = jsonNode["item_id"].AsInt;
+            var eid = jsonNode["entity_id"].AsInt;
+            var price = jsonNode["price"].AsInt;
+            var placeNumber = jsonNode["place_number"].AsInt;
+            var posX = jsonNode["pos_x"].AsFloat;
+            var posY = jsonNode["pos_y"].AsFloat;
+            var posZ = jsonNode["pos_z"].AsFloat;
+
+            var player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == playerId);
+            if (price != -1) // Продажа у NPC
+            {
+                var element = player.FindElementByEId(eid);
+                player.Money += price;
+                player.inventory.Remove(element.Key);
+            }
+            else // Выбрасываем в мир
+            {
+                var element = player.FindElementByEId(eid);
+                player.inventory.Remove(element.Key);
+
+                var entity = element.Value;
+                entity.posX = posX;
+                entity.posY = posY;
+                entity.posZ = posZ;
+                worldMapEntityList.Add(entity);
+            }
+
+            int counter = 0;
+            foreach (var item in player.inventory)
+            {
+                answer["inventory"][counter]["place_number"] = item.Key;
+                answer["inventory"][counter]["entity_id"] = item.Value.eId;
+                answer["inventory"][counter]["item_id"] = item.Value.itemId;
+                counter++;
+            }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void UpdateWorldEntityPositionsStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос о дропе предмета из инвентаря! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var playerId = jsonNode["id"].AsInt;
+            var updateEntityList = jsonNode["entity_list"].AsArray;
+            List<Entity> notToResendInfoList = new List<Entity>();
+            for (int i = 0; i < updateEntityList.Count; i++)
+            {
+                var eid = updateEntityList[i]["entity_id"].AsInt;
+                var posX = updateEntityList[i]["pos_x"].AsFloat;
+                var posY = updateEntityList[i]["pos_y"].AsFloat;
+                var posZ = updateEntityList[i]["pos_z"].AsFloat;
+                var entity = worldMapEntityList.Find(item => item.eId == eid);
+                entity.posX = posX;
+                entity.posY = posY;
+                entity.posZ = posZ;
+                notToResendInfoList.Add(entity);
+            }
+
+            int counter = 0;
+            foreach (var item in worldMapEntityList)
+            {
+                if (notToResendInfoList.Find(entity => entity.eId == item.eId) != null) continue;
+                answer["entity_list"][counter]["entity_id"] = item.eId;
+                answer["entity_list"][counter]["item_id"] = item.itemId;
+                answer["entity_list"][counter]["pos_x"] = item.posX;
+                answer["entity_list"][counter]["pos_y"] = item.posY;
+                answer["entity_list"][counter]["pos_z"] = item.posZ;
+                counter++;
             }
 
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);

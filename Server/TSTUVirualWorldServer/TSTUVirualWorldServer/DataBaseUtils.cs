@@ -11,12 +11,15 @@ namespace TSTUVirualWorldServer
     class DataBaseUtils
     {
         private TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter;
+        private TSTUDataBaseDataSetTableAdapters.ItemsTableAdapter itemsTableAdapter;
         private Form1 form;
 
-        public DataBaseUtils(TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter, Form1 form)
+        public DataBaseUtils(TSTUDataBaseDataSetTableAdapters.UsersTableAdapter usersTableAdapter, TSTUDataBaseDataSetTableAdapters.ItemsTableAdapter itemsTableAdapter, 
+            Form1 form)
         {
             this.form = form;
             this.usersTableAdapter = usersTableAdapter;
+            this.itemsTableAdapter = itemsTableAdapter;
         }
 
         public int CheckLoginAccess(string login, string password)

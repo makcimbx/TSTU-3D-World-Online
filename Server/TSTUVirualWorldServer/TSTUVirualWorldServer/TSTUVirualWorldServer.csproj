@@ -69,6 +69,7 @@
       <DependentUpon>DataBaseEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DataBaseUtils.cs" />
+    <Compile Include="Entity.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -76,6 +77,12 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="GameServer.cs" />
+    <Compile Include="ItemDBEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ItemDBEditor.Designer.cs">
+      <DependentUpon>ItemDBEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,6 +98,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ItemDBEditor.resx">
+      <DependentUpon>ItemDBEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -17,9 +17,25 @@ namespace TSTUVirualWorldServer
         public string playerModel;
         public string modelMD5Hash;
 
+        public long Money;
+
+        public Dictionary<int, Entity> inventory;
+
         public Player(int Id)
         {
             this.Id = Id;
+        }
+
+        public KeyValuePair<int,Entity> FindElementByEId(long eid)
+        {
+            foreach (var item in inventory)
+            {
+                if(item.Value.eId == eid)
+                {
+                    return item;
+                }
+            }
+            return new KeyValuePair<int, Entity>(-1, null);
         }
     }
 }
