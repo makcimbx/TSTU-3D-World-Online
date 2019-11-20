@@ -34,11 +34,11 @@ namespace TSTU.Controller
                 curtain.SetActive(value);
             }
         }
-        public int Money
+        public long Money
         {
             get
             {
-                return int.Parse(money.text);
+                return long.Parse(money.text);
             }
             set
             {

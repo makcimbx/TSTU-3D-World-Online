@@ -250,10 +250,11 @@ namespace TSTU.Controller
 
         public void UpdateUI()
         {
+            var inventory = Inventory.instance.items;
 
             for (int i = 0; i < playerPanel.Slots.Length; i++)
             {
-                if (i < Inventory.instance.Count)
+                if (inventory.ContainsKey(i))
                 {
                     playerPanel.Slots[i].AddItem(Inventory.instance.items[i]);
                 }
@@ -262,6 +263,7 @@ namespace TSTU.Controller
                     playerPanel.Slots[i].ClearSlot();
                 }
             }
+
             playerPanel.Money = Inventory.instance.Money;
 
             if (inventoryState == InventoryState.Trade)
