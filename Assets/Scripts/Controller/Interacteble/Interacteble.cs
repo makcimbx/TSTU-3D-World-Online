@@ -9,7 +9,7 @@ namespace TSTU.Controller
 
         public virtual void Interact(PlayerController player)
         {
-            Debug.Log("Взаимодействие с " + name);
+            //Debug.Log("Взаимодействие с " + name);
         }
 
     }

@@ -14,19 +14,19 @@ namespace TSTU.Controller
     {
         [Space(10)]
         [Header("Панель инвентаря")]
-        [SerializeField] private GameObject playerPanel;
+        [SerializeField] private InventoryPanel playerPanel;
 
         [Space(10)]
         [Header("Панель товаров")]
-        [SerializeField] private GameObject traderPanel;
+        [SerializeField] private InventoryPanel traderPanel;
 
         [Space(10)]
         [Header("Панель покупки")]
-        [SerializeField] private GameObject buyPanel;
+        [SerializeField] private InventoryPanel buyPanel;
 
         [Space(10)]
         [Header("Панель продажи")]
-        [SerializeField] private GameObject sellPanel;
+        [SerializeField] private InventoryPanel sellPanel;
 
         [Space(10)]
         [Header("Точка для переноса объектов")]
@@ -225,6 +225,11 @@ namespace TSTU.Controller
         }
         #endregion
 
+        public void Trading(Trader trader)
+        {
+            inventoryController.Trade();
+
+        }
 
 
         public void StartTrading(Trader trader)

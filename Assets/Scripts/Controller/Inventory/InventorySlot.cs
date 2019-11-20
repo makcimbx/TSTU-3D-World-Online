@@ -12,18 +12,7 @@ namespace TSTU.Controller
         [SerializeField]
         public GameObject itemButton;
         private Item item;
-
-        public Panel panel { get; set; } = Panel.None;
-        public enum Panel
-        {
-            None,
-            Player,
-            Buy,
-            Sell,
-            Trader,
-            Сhest
-        }
-
+        
         public bool isEmpty
         {
             get
@@ -31,6 +20,8 @@ namespace TSTU.Controller
                 return item == null;
             }
         }
+
+        public InventoryPanel.Panel panel { get; set; } = InventoryPanel.Panel.None;
 
         public event Action<InventorySlot> onButtonDrag, onButtonDragEnd, onPointerEnter, onPointerExit;
 
