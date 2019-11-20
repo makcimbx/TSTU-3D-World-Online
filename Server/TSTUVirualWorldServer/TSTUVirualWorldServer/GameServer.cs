@@ -21,7 +21,8 @@ namespace TSTUVirualWorldServer
         UpdatePlayerModels,
         AddEntityInInventory,
         DropEntityFromInventory,
-        UpdateWorldEntityPositions
+        UpdateWorldEntityPositions,
+        GetDealerInventory
     }
 
     public class GameServer
@@ -91,6 +92,10 @@ namespace TSTUVirualWorldServer
                     else if(state == (int)ServerState.UpdateWorldEntityPositions)
                     {
                         UpdateWorldEntityPositionsStream(jsonMessage, remoteIp);
+                    }
+                    else if(state == (int)ServerState.GetDealerInventory)
+                    {
+                        GetDealerInventoryStream(jsonMessage, remoteIp);
                     }
                 }
             }
@@ -315,7 +320,7 @@ namespace TSTUVirualWorldServer
             var playerId = jsonNode["id"].AsInt;
             var itemId = jsonNode["item_id"].AsInt;
             var eid = jsonNode["entity_id"].AsInt;
-            var price = jsonNode["price"].AsInt;
+            var price = dataBaseUtils.GetItemPriceFromId(itemId);
             var placeNumber = jsonNode["place_number"].AsInt;
 
             var player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == playerId);
@@ -355,7 +360,7 @@ namespace TSTUVirualWorldServer
             var playerId = jsonNode["id"].AsInt;
             var itemId = jsonNode["item_id"].AsInt;
             var eid = jsonNode["entity_id"].AsInt;
-            var price = jsonNode["price"].AsInt;
+            var price = dataBaseUtils.GetItemPriceFromId(itemId);
             var placeNumber = jsonNode["place_number"].AsInt;
             var posX = jsonNode["pos_x"].AsFloat;
             var posY = jsonNode["pos_y"].AsFloat;
@@ -425,6 +430,30 @@ namespace TSTUVirualWorldServer
                 answer["entity_list"][counter]["pos_x"] = item.posX;
                 answer["entity_list"][counter]["pos_y"] = item.posY;
                 answer["entity_list"][counter]["pos_z"] = item.posZ;
+                counter++;
+            }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void GetDealerInventoryStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос инвентаря торговца! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var playerId = jsonNode["id"].AsInt;
+            var dealerId = jsonNode["dealer_id"].AsInt;
+
+            Dealer dealer = dataBaseUtils.GetDealerFromId(dealerId);
+            answer["dealer_id"] = dealer.DealerId;
+            int counter = 0;
+            foreach (var item in dealer.inventory)
+            {
+                answer["dealer_inventory"][counter]["price"] = item.price;
+                answer["dealer_inventory"][counter]["item_id"] = item.itemId;
                 counter++;
             }
 

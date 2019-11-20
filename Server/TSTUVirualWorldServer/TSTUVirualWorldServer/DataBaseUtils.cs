@@ -48,6 +48,39 @@ namespace TSTUVirualWorldServer
             return true;
         }
 
+        public Dealer GetDealerFromId(int dealerId)
+        {
+            var itemsDataTable = itemsTableAdapter.GetData();
+            Dealer dealer = new Dealer(dealerId);
+            dealer.inventory = new List<Entity>();
+            foreach (DataRow row in itemsDataTable.Rows)
+            {
+                if ((int)row["DealerId"] == dealerId)
+                {
+                    var item = new Entity(-1, (int)row["Id"]);
+                    item.price = (int)row["Price"];
+                    dealer.inventory.Add(item);
+                }
+            }
+
+            return dealer;
+        }
+
+        public int GetItemPriceFromId(int itemId)
+        {
+            var itemsDataTable = itemsTableAdapter.GetData();
+            
+            foreach (DataRow row in itemsDataTable.Rows)
+            {
+                if ((int)row["Id"] == itemId)
+                {
+                    return (int)row["Price"];
+                }
+            }
+
+            return 0;
+        }
+
         private bool CheckLoginExists(string login)
         {
             var usersDataTable = usersTableAdapter.GetData();

@@ -13,6 +13,7 @@ namespace TSTUVirualWorldServer
         public float posX;
         public float posY;
         public float posZ;
+        public int price;
 
         public Entity(long eId, int itemId)
         {
