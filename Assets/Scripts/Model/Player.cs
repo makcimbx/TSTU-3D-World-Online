@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TSTU.Model
@@ -10,6 +11,10 @@ namespace TSTU.Model
 
         public string playerModel;
         public string playerModelMD5Hash;
+
+        public long Money;
+
+        public Dictionary<int,Entity> inventory;
 
         public Player(int Id)
         {

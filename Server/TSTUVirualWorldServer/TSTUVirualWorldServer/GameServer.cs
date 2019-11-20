@@ -27,6 +27,8 @@ namespace TSTUVirualWorldServer
 
     public class GameServer
     {
+        private const int StartMoneyCount = 1000;
+
         private int localPort;
         private Form1 form;
         private DataBaseUtils dataBaseUtils;
@@ -155,6 +157,7 @@ namespace TSTUVirualWorldServer
                 player.playerModel = jsonNode["model"].GetStringOrDefault(string.Empty);
                 player.modelMD5Hash = GetMd5Hash(MD5.Create(), player.playerModel);
                 player.inventory = new Dictionary<int, Entity>();
+                player.Money = StartMoneyCount;
                 usersIdIpList.Add(player, remoteIp);
 
                 //
@@ -165,6 +168,7 @@ namespace TSTUVirualWorldServer
                 //
 
                 answer["answer"] = true;
+                answer["money"] = player.Money;
             }
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
@@ -345,6 +349,7 @@ namespace TSTUVirualWorldServer
                 answer["inventory"][counter]["item_id"] = item.Value.itemId;
                 counter++;
             }
+            answer["money"] = player.Money;
 
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
@@ -360,14 +365,14 @@ namespace TSTUVirualWorldServer
             var playerId = jsonNode["id"].AsInt;
             var itemId = jsonNode["item_id"].AsInt;
             var eid = jsonNode["entity_id"].AsInt;
+            var npcSell = jsonNode["npc_sell"].AsBool;
             var price = dataBaseUtils.GetItemPriceFromId(itemId);
-            var placeNumber = jsonNode["place_number"].AsInt;
             var posX = jsonNode["pos_x"].AsFloat;
             var posY = jsonNode["pos_y"].AsFloat;
             var posZ = jsonNode["pos_z"].AsFloat;
 
             var player = new List<Player>(usersIdIpList.Keys.ToArray()).Find(item => item.Id == playerId);
-            if (price != -1) // Продажа у NPC
+            if (npcSell) // Продажа у NPC
             {
                 var element = player.FindElementByEId(eid);
                 player.Money += price;
@@ -393,6 +398,7 @@ namespace TSTUVirualWorldServer
                 answer["inventory"][counter]["item_id"] = item.Value.itemId;
                 counter++;
             }
+            answer["money"] = player.Money;
 
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
@@ -407,7 +413,6 @@ namespace TSTUVirualWorldServer
 
             var playerId = jsonNode["id"].AsInt;
             var updateEntityList = jsonNode["entity_list"].AsArray;
-            List<Entity> notToResendInfoList = new List<Entity>();
             for (int i = 0; i < updateEntityList.Count; i++)
             {
                 var eid = updateEntityList[i]["entity_id"].AsInt;
@@ -418,13 +423,11 @@ namespace TSTUVirualWorldServer
                 entity.posX = posX;
                 entity.posY = posY;
                 entity.posZ = posZ;
-                notToResendInfoList.Add(entity);
             }
 
             int counter = 0;
             foreach (var item in worldMapEntityList)
             {
-                if (notToResendInfoList.Find(entity => entity.eId == item.eId) != null) continue;
                 answer["entity_list"][counter]["entity_id"] = item.eId;
                 answer["entity_list"][counter]["item_id"] = item.itemId;
                 answer["entity_list"][counter]["pos_x"] = item.posX;

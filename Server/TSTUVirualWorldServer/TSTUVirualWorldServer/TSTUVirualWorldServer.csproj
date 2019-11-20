@@ -69,6 +69,7 @@
       <DependentUpon>DataBaseEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DataBaseUtils.cs" />
+    <Compile Include="Dealer.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
