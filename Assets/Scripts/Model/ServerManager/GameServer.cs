@@ -76,6 +76,7 @@ namespace TSTU.Server
             {
                 player = new TSTU.Model.Player(userId);
                 player.playerModel = model;
+                player.inventory = new Dictionary<int, Entity>();
             }
             return successfull;
         }
