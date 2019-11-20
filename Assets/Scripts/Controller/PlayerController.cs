@@ -67,7 +67,8 @@ namespace TSTU.Controller
 
             Cursor.lockState = CursorLockMode.Locked;
             inventoryController.SetInventoryPanels(playerPanel, traderPanel, buyPanel, sellPanel);
-            inventoryController.CloseAll();
+
+            back.onClick.AddListener(EndTrading);
 
             back.gameObject.SetActive(false);
             trade.gameObject.SetActive(false);
@@ -225,7 +226,7 @@ namespace TSTU.Controller
         }
         #endregion
 
-        public void Trading(Trader trader)
+        public void Trading()
         {
             inventoryController.Trade();
 

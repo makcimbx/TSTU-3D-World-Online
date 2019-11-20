@@ -11,7 +11,7 @@ namespace TSTU.Controller
         [SerializeField] private GameObject curtain;
 
         [Header("Родитель слотов")]
-        [SerializeField] private GameObject itemParent;
+        [SerializeField] public GameObject itemParent;
 
         [Header("Текс заголовка")]
         [SerializeField] private Text handler;
@@ -74,7 +74,6 @@ namespace TSTU.Controller
         private void Start()
         {
             Curtain = false;
-            Slots = itemParent.GetComponentsInChildren<InventorySlot>();
         }
 
 

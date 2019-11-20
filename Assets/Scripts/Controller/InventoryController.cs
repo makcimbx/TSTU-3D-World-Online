@@ -60,15 +60,7 @@ namespace TSTU.Controller
 
             return item;
         }
-
-        internal void SetInventoryPanels(InventoryPanel playerPanel, InventoryPanel traderPanel)
-        {
-            this.playerPanel = playerPanel;
-            this.traderPanel = traderPanel;
-
-            Initialization();
-        }
-
+        
         internal void SetInventoryPanels(
             InventoryPanel playerPanel,
             InventoryPanel traderPanel, 
@@ -80,9 +72,6 @@ namespace TSTU.Controller
             this.buyPanel = buyPanel;
             this.sellPanel = sellPanel;
 
-            SetActiveTrading(false);
-
-
             Initialization();
         }
 
@@ -92,7 +81,9 @@ namespace TSTU.Controller
             PanelInit(traderPanel, InventoryPanel.Panel.Trader);
             PanelInit(buyPanel, InventoryPanel.Panel.Buy);
             PanelInit(sellPanel, InventoryPanel.Panel.Sell);
-            StateActivePanel();
+                      
+            UpdateUI();
+            CloseAll();
         }
 
 
@@ -100,6 +91,7 @@ namespace TSTU.Controller
         {
             panel.State = namePanel;
 
+            panel.Slots = panel.itemParent.GetComponentsInChildren<InventorySlot>();
 
             foreach (var item in panel.Slots)
             {
@@ -109,8 +101,8 @@ namespace TSTU.Controller
                 item.onPointerExit += OnExit;
                 item.panel = namePanel;
             }
-
-            UpdateUI();
+            if (debug)
+                Debug.Log("PanelInit " + panel.name);
         }
 
         #region OnMouse
@@ -324,6 +316,8 @@ namespace TSTU.Controller
                 if (debug)
                     Debug.Log("Поиск предметов ещё не готов");
             }
+            else
+                SetActiveTrading(false);
         }
 
         internal void StartTrading(Trader trader)

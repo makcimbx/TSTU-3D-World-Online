@@ -36,7 +36,7 @@ namespace TSTU.Controller
         public void Add(Item item)
         {
             if (!item.isDefaultItem)
-            {
+            {                
                 Items.Add(item);
                 OnInventoryChange?.Invoke();
             }
