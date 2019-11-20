@@ -27,7 +27,7 @@ namespace TSTUVirualWorldServer
 
             dataBaseEditorForm = new DataBaseEditorForm();
             
-            gameServer = new GameServer(this, localPort, dataBaseEditorForm.usersTableAdapter);
+            gameServer = new GameServer(this, localPort, dataBaseEditorForm.usersTableAdapter, dataBaseEditorForm.ItemDBEditor.itemsTableAdapter);
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using TSTU.Model;
+using UnityEngine;
 
 namespace TSTU.Server
 {
@@ -9,7 +11,12 @@ namespace TSTU.Server
         Task<bool> Registration(string login, string password);
         Task<bool> StartPlayerInfoStream();
         Task<bool> UpdatePlayerInfoStream();
-        TSTU.Model.Player CurrentPlayer { get; }
-        List<TSTU.Model.Player> OtherPlayerList { get; }
+        Task<bool> AddEntityInInventoryStream(int placeNumber, int itemId = -1, int eid = -1);
+        Task<bool> DropEntityFromInventoryStream(int itemId, int eid, bool isSellToNpc, Vector3 worldDropPos);
+        Task<bool> UpdateWorldEntityPositionsStream(List<Entity> worldEntitiesToUpdate);
+        Task<Dealer> GetDealerInventory(int dealerId);
+        Player CurrentPlayer { get; }
+        List<Player> OtherPlayerList { get; }
+        List<Entity> OnWorldMapEntityList { get; }
     }
 }

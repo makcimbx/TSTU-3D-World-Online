@@ -12,9 +12,13 @@ namespace TSTUVirualWorldServer
 {
     public partial class DataBaseEditorForm : Form
     {
+        public ItemDBEditor ItemDBEditor;
+
         public DataBaseEditorForm()
         {
             InitializeComponent();
+
+            ItemDBEditor = new ItemDBEditor();
         }
 
         private void usersBindingNavigatorSaveItem_Click(object sender, EventArgs e)
@@ -30,6 +34,11 @@ namespace TSTUVirualWorldServer
             // TODO: данная строка кода позволяет загрузить данные в таблицу "tSTUDataBaseDataSet.Users". При необходимости она может быть перемещена или удалена.
             this.usersTableAdapter.Fill(this.tSTUDataBaseDataSet.Users);
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ItemDBEditor.Show();
         }
     }
 }
