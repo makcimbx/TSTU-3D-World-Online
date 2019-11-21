@@ -11,8 +11,8 @@ namespace TSTU.Server
         Task<bool> Registration(string login, string password);
         Task<bool> StartPlayerInfoStream();
         Task<bool> UpdatePlayerInfoStream();
-        Task<bool> AddEntityInInventoryStream(int placeNumber, int itemId = -1, int eid = -1);
-        Task<bool> DropEntityFromInventoryStream(int itemId, int eid, bool isSellToNpc, Vector3 worldDropPos);
+        Task<bool> AddEntityInInventoryStream(int placeNumber, int itemId = -1, long eid = -1);
+        Task<bool> DropEntityFromInventoryStream(int itemId, long eid, bool isSellToNpc, Vector3 worldDropPos);
         Task<bool> UpdateWorldEntityPositionsStream(List<Entity> worldEntitiesToUpdate);
         Task<Dealer> GetDealerInventory(int dealerId);
         Player CurrentPlayer { get; }

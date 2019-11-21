@@ -202,7 +202,7 @@ namespace TSTU.Server
             return successful;
         }
 
-        public async Task<bool> AddEntityInInventoryStream(int placeNumber, int itemId = -1, int eid = -1)
+        public async Task<bool> AddEntityInInventoryStream(int placeNumber, int itemId = -1, long eid = -1)
         {
             if (player == null) return false;
 
@@ -237,7 +237,7 @@ namespace TSTU.Server
             return successful;
         }
 
-        public async Task<bool> DropEntityFromInventoryStream(int itemId, int eid, bool isSellToNpc, Vector3 worldDropPos)
+        public async Task<bool> DropEntityFromInventoryStream(int itemId, long eid, bool isSellToNpc, Vector3 worldDropPos)
         {
             if (player == null) return false;
 
