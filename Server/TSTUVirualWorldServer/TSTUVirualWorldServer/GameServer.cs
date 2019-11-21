@@ -104,6 +104,7 @@ namespace TSTUVirualWorldServer
             catch (Exception ex)
             {
                 LogMessage(ex.Message);
+                LogMessage(ex.StackTrace);
             }
             finally
             {
