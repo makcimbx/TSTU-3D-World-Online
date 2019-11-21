@@ -349,6 +349,7 @@ namespace TSTU.Controller
             {
                 inventoryState = InventoryState.Trade;
                 this.trader = trader;
+                trader.UpdateInventory();
                 Inventory.instance.OnInventoryChange += trader.UpdateInventory;
 
                 StateActivePanel();

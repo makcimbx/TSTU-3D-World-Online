@@ -13641,7 +13641,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isInteracteble: 1
   "is\u0421arryble": 0
-  items: []
+  id: 1
 --- !u!54 &1363049963
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -121,7 +121,9 @@ public class PlayerOnlineController : MonoBehaviour
                         entity.posY = item.posY;
                         entity.posZ = item.posZ;
 
-                        controller.GetComponent<ItemPickup>().item.eId = item.eId;
+                        var contItem = controller.GetComponent<ItemPickup>();
+                        contItem.item = Inventory.СopyItem(entity, contItem.item);
+
                         itemList.Add(entity, controller.transform);
                     }
                 }
