@@ -6,7 +6,6 @@ namespace TSTU.Controller
     {
         public int typeId = int.MinValue;
         public long eId = -1;
-        new public string name = "simple text";
         public Sprite icon = null;
         public bool isDefaultItem = false;
         public int price = 0;

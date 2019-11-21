@@ -3,8 +3,29 @@ namespace TSTU.Controller
 {
     public class Trader : Interacteble
     {
-        public List<Item> items = new List<Item>();
+        public int id = -1;
+        public Item[] Items {
+            get;
+            private set;
+        }
+        
+
         private int money = int.MaxValue;
+
+
+
+
+        public async void UpdateInventory()
+        {
+            var a = await GameController.Instance.GameServer.GetDealerInventory(id);
+            var list = new List<Item>();
+            foreach (var item in a.inventory)
+            {
+                list.Add(Inventory.GetItem(item));
+            }
+            Items = list.ToArray();
+        } 
+
         public int Money {
             get
             {
@@ -20,6 +41,6 @@ namespace TSTU.Controller
             player.StartTrading(this);
         }
 
-        
+       
     }
 }

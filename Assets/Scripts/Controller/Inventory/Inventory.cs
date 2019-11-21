@@ -24,7 +24,7 @@ namespace TSTU.Controller
 
         public List<Item> ItemsBase = new List<Item>();
 
-                  
+
         public Dictionary<int, Item> items
         {
             get
@@ -34,12 +34,45 @@ namespace TSTU.Controller
                 foreach (var item in GameController.Instance.GameServer.CurrentPlayer.inventory)
                 {
                     var it = instance.ItemsBase.Find(x => x.typeId == item.Value.itemId);
-                    it.eId = item.Value.eId;
-                    list.Add(item.Key, it);
+                    if (it == null)
+                    {
+                        Debug.Log("Несоответствие предметов");
+
+                        continue;
+                    }
+
+                    var ret = СopyItem(item.Value, it);
+
+                    list.Add(item.Key, ret);
                 }
 
                 return list;
             }
+        }
+
+        public static Item GetItem(Entity entity)
+        {
+            var item = instance.ItemsBase.Find(x => x.typeId == entity.itemId);
+            return (item != null) ? СopyItem(entity, item) : null;
+
+
+        }
+
+
+        public static Item СopyItem(Entity entity, Item item)
+        {
+            return new Item()
+            {
+                eId = entity.eId,
+                typeId = item.typeId,
+                prefab = item.prefab,
+                price = item.price,
+                icon = item.icon,
+                isDefaultItem = item.isDefaultItem,
+                name = item.name
+            };
+
+
         }
 
         public int Count { get => items.Count; }
@@ -52,6 +85,7 @@ namespace TSTU.Controller
         {
             get
             {
+                Debug.Log("Money" + GameController.Instance.GameServer.CurrentPlayer.Money);
                 return GameController.Instance.GameServer.CurrentPlayer.Money;
             }
 
@@ -65,8 +99,7 @@ namespace TSTU.Controller
             {
                 var slot = GetFreeSlot();
                 if (slot != -1)
-                    await GameController.Instance.GameServer.AddEntityInInventoryStream(slot, item.typeId, (int)item.eId);
-                
+                    await GameController.Instance.GameServer.AddEntityInInventoryStream(slot, item.typeId, item.eId);
 
 
                 OnInventoryChange?.Invoke();
@@ -88,12 +121,13 @@ namespace TSTU.Controller
             return -1;
         }
 
-        public void Remove(Item item)
+        public async void Remove(Item item, bool isTrade, Vector3 position)
         {
+            await GameController.Instance.GameServer.DropEntityFromInventoryStream(item.typeId, item.eId, isTrade, position);
             OnInventoryChange?.Invoke();
 
         }
 
-    
+
     }
 }

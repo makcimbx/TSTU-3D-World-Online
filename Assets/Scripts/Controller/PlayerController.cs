@@ -67,11 +67,11 @@ namespace TSTU.Controller
 
             Cursor.lockState = CursorLockMode.Locked;
             inventoryController.SetInventoryPanels(playerPanel, traderPanel, buyPanel, sellPanel);
+            inventoryController.SetButtons(back, trade);
 
-            back.onClick.AddListener(EndTrading);
 
-            back.gameObject.SetActive(false);
-            trade.gameObject.SetActive(false);
+
+            
 
         }
 
@@ -229,7 +229,6 @@ namespace TSTU.Controller
         public void Trading()
         {
             inventoryController.Trade();
-
         }
 
 
@@ -239,8 +238,7 @@ namespace TSTU.Controller
             Cursor.lockState = CursorLockMode.None;
             firstPersonController.enabled = false;
             inventoryController.StartTrading(trader);
-            back.gameObject.SetActive(true);
-            trade.gameObject.SetActive(true);
+          
 
         }
 
@@ -250,8 +248,6 @@ namespace TSTU.Controller
             Cursor.lockState = CursorLockMode.Locked;
             firstPersonController.enabled = true;
             inventoryController.CloseAll();
-            back.gameObject.SetActive(false);
-            trade.gameObject.SetActive(false);
         }
     }
 

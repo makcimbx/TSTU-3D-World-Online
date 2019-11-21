@@ -55,8 +55,7 @@ namespace TSTU.Controller
         private Item GetItem(InventorySlot slot)
         {
             Item item = slot.GetAndClearItem();
-            Inventory.instance.Remove(item);
-            var obj = Instantiate(item.prefab, transform.position, Quaternion.identity);
+            Inventory.instance.Remove(item, false, transform.position);
 
             return item;
         }
@@ -86,6 +85,14 @@ namespace TSTU.Controller
             CloseAll();
         }
 
+        internal void SetButtons(Button back, Button trade)
+        {
+            this.trade = trade;
+            this.back = back;
+
+            back.gameObject.SetActive(false);
+            trade.gameObject.SetActive(false);
+        }
 
         private void PanelInit(InventoryPanel panel, InventoryPanel.Panel namePanel)
         {
@@ -265,14 +272,14 @@ namespace TSTU.Controller
             }
 
             playerPanel.Money = Inventory.instance.Money;
-
+            var traderInventory = trader.Items;
             if (inventoryState == InventoryState.Trade)
             {
                 for (int i = 0; i < traderPanel.Slots.Length; i++)
                 {
-                    if (i < trader.items.Count)
+                    if (i < traderInventory.Length)
                     {
-                        traderPanel.Slots[i].AddItem(trader.items[i]);
+                        traderPanel.Slots[i].AddItem(traderInventory[i]);
 
                     }
                     else
@@ -282,13 +289,24 @@ namespace TSTU.Controller
                 }
 
             }
+
+            playerPanel.Money = Inventory.instance.Money;
             if (debug)
-                Debug.Log("UpdateUI ");
+                Debug.Log("UpdateUI");
         }
 
         internal void Trade()
         {
-            throw new NotImplementedException();
+            foreach (var slot in sellPanel.Slots)
+            {
+                if (!slot.isEmpty)
+                {
+                    var item = slot.GetAndClearItem();
+
+                }
+                    
+            }
+            Debug.Log("Обмен с торговцем" + trader.gameObject.name);
         }
 
         internal void OpenInventory()
@@ -298,6 +316,7 @@ namespace TSTU.Controller
                 inventoryState = InventoryState.Inventory;
                 if(playerPanel != null)
                     playerPanel.Active = true;
+                UpdateUI();
             }
         }
 
@@ -328,8 +347,13 @@ namespace TSTU.Controller
             {
                 inventoryState = InventoryState.Trade;
                 this.trader = trader;
+                Inventory.instance.OnInventoryChange += trader.UpdateInventory;
+
                 StateActivePanel();
+
                 UpdateUI();
+
+               
             }
 
             if (debug)
@@ -353,21 +377,24 @@ namespace TSTU.Controller
                     if (!sellPanel.Slots[i].isEmpty)
                     {
                         InventorySlot slot = null;
+                        
+                        
 
-                        for (int j = 0; j < playerPanel.Slots.Length; j++)
-                            if (playerPanel.Slots[j].isEmpty)
-                                slot = playerPanel.Slots[j];
+                        //for (int j = 0; j < playerPanel.Slots.Length; j++)
+                        //    if (playerPanel.Slots[j].isEmpty)
+                        //        slot = playerPanel.Slots[j];
 
-                        if (slot != null)
-                            slot.AddItem(sellPanel.Slots[i].GetAndClearItem());
-                        else
-                            GetItem(sellPanel.Slots[i]);
+                        //if (slot != null)
+                        //    slot.AddItem(sellPanel.Slots[i].GetAndClearItem());
+                        //else
+                        //    GetItem(sellPanel.Slots[i]);
                     }
                 }
               
 
                 inventoryState = InventoryState.None;
                 UpdateUI();
+                Inventory.instance.OnInventoryChange -= trader.UpdateInventory;
                 trader = null;
                 StateActivePanel();
                 
@@ -390,14 +417,19 @@ namespace TSTU.Controller
             if (inventoryState == InventoryState.None)
             {
                 SetActiveTrading(false);
+                back.gameObject.SetActive(false);
+                trade.gameObject.SetActive(false);
             }
             else if (inventoryState == InventoryState.Trade)
             {
                 SetActiveTrading(true);
+                back.gameObject.SetActive(true);
+                trade.gameObject.SetActive(true);
             }
             else if (inventoryState == InventoryState.Inventory)
             {
                 playerPanel.Active = true;
+
             }
             else if (inventoryState == InventoryState.Search)
             {
