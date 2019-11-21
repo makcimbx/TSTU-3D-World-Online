@@ -405,8 +405,8 @@ namespace TSTUVirualWorldServer
 
         private void UpdateWorldEntityPositionsStream(JSONNode jsonNode, IPEndPoint remoteIp)
         {
-            LogMessage($"Запрос о дропе предмета из инвентаря! Id: {jsonNode["id"]};");
-            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+            //LogMessage($"Запрос о дропе предмета из инвентаря! Id: {jsonNode["id"]};");
+            //LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
 
             JSONObject answer = new JSONObject();
             answer["answer"] = true;
