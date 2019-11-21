@@ -272,9 +272,11 @@ namespace TSTU.Controller
             }
 
             playerPanel.Money = Inventory.instance.Money;
-            var traderInventory = trader.Items;
+
+           
             if (inventoryState == InventoryState.Trade)
             {
+                var traderInventory = trader.Items;
                 for (int i = 0; i < traderPanel.Slots.Length; i++)
                 {
                     if (i < traderInventory.Length)
