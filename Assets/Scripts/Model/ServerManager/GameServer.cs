@@ -136,39 +136,48 @@ namespace TSTU.Server
             byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
-            var answer = await client.ReceiveAsync();
-            client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
-            JSONNode jsonAnswer = JSON.Parse(message);
-            var successfull = jsonAnswer["answer"].AsBool;
-            if (successfull)
+            int timeout = 200;
+            var task = client.ReceiveAsync();
+            if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
             {
-                List<TSTU.Model.Player> playerModelUpdateList = new List<Model.Player>();
-
-                var playerMas = jsonAnswer["player_massive"].AsArray;
-                List<TSTU.Model.Player> newOtherPlayerList = new List<Model.Player>();
-                for (int i = 0; i < playerMas.Count; i++)
+                var answer = task.Result;
+                client.Close();
+                string message = Encoding.UTF8.GetString(answer.Buffer);
+                JSONNode jsonAnswer = JSON.Parse(message);
+                var successfull = jsonAnswer["answer"].AsBool;
+                if (successfull)
                 {
-                    var otherPlayer = new TSTU.Model.Player(playerMas[i]["id"].AsInt);
-                    Vector3 pos = new Vector3(playerMas[i]["pos_x"].AsFloat, playerMas[i]["pos_y"].AsFloat, playerMas[i]["pos_z"].AsFloat);
-                    otherPlayer.PositionOnMap = pos;
-                    otherPlayer.playerModelMD5Hash = playerMas[i]["model_hash"].GetStringOrDefault(string.Empty);
-                    newOtherPlayerList.Add(otherPlayer);
+                    List<TSTU.Model.Player> playerModelUpdateList = new List<Model.Player>();
 
-                    var beforePlayer = otherPlayerList.Find(item => item.Id == otherPlayer.Id);
-                    if (beforePlayer == null || beforePlayer.playerModelMD5Hash != otherPlayer.playerModelMD5Hash)
+                    var playerMas = jsonAnswer["player_massive"].AsArray;
+                    List<TSTU.Model.Player> newOtherPlayerList = new List<Model.Player>();
+                    for (int i = 0; i < playerMas.Count; i++)
                     {
-                        playerModelUpdateList.Add(otherPlayer);
+                        var otherPlayer = new TSTU.Model.Player(playerMas[i]["id"].AsInt);
+                        Vector3 pos = new Vector3(playerMas[i]["pos_x"].AsFloat, playerMas[i]["pos_y"].AsFloat, playerMas[i]["pos_z"].AsFloat);
+                        otherPlayer.PositionOnMap = pos;
+                        otherPlayer.playerModelMD5Hash = playerMas[i]["model_hash"].GetStringOrDefault(string.Empty);
+                        newOtherPlayerList.Add(otherPlayer);
+
+                        var beforePlayer = otherPlayerList.Find(item => item.Id == otherPlayer.Id);
+                        if (beforePlayer == null || beforePlayer.playerModelMD5Hash != otherPlayer.playerModelMD5Hash)
+                        {
+                            playerModelUpdateList.Add(otherPlayer);
+                        }
                     }
+
+                    if (playerModelUpdateList.Count != 0) await UpdatePlayerModelsStream(playerModelUpdateList);
+
+                    otherPlayerList = newOtherPlayerList;
                 }
 
-                if (playerModelUpdateList.Count != 0) await UpdatePlayerModelsStream(playerModelUpdateList);
 
-                otherPlayerList = newOtherPlayerList;
+                return successfull;
             }
-
-            
-            return successfull;
+            else
+            {
+                return false;
+            }
         }
 
         private async Task<bool> UpdatePlayerModelsStream(List<TSTU.Model.Player> players)
@@ -190,7 +199,7 @@ namespace TSTU.Server
             string message = Encoding.UTF8.GetString(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
-            if(successful)
+            if (successful)
             {
                 var playerModelsLsit = jsonAnswer["player_list"].AsArray;
                 for (int i = 0; i < playerModelsLsit.Count; i++)
@@ -293,27 +302,37 @@ namespace TSTU.Server
             byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
-            var answer = await client.ReceiveAsync();
-            client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
-            JSONNode jsonAnswer = JSON.Parse(message);
-            var successful = jsonAnswer["answer"].AsBool;
-            if (successful)
+
+            int timeout = 200;
+            var task = client.ReceiveAsync();
+            if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
             {
-                var entitiesArray = jsonAnswer["entity_list"].AsArray;
-                onWorldMapEntityList = new List<Entity>();
-                for (int i = 0; i < entitiesArray.Count; i++)
+                var answer = task.Result;
+                client.Close();
+                string message = Encoding.UTF8.GetString(answer.Buffer);
+                JSONNode jsonAnswer = JSON.Parse(message);
+                var successful = jsonAnswer["answer"].AsBool;
+                if (successful)
                 {
-                    int eItemId = entitiesArray[i]["item_id"].AsInt;
-                    int eeId = entitiesArray[i]["entity_id"].AsInt;
-                    Entity entity = new Entity(eeId, eItemId);
-                    entity.posX = entitiesArray[i]["pos_x"].AsFloat;
-                    entity.posY = entitiesArray[i]["pos_y"].AsFloat;
-                    entity.posZ = entitiesArray[i]["pos_z"].AsFloat;
-                    onWorldMapEntityList.Add(entity);
+                    var entitiesArray = jsonAnswer["entity_list"].AsArray;
+                    onWorldMapEntityList = new List<Entity>();
+                    for (int i = 0; i < entitiesArray.Count; i++)
+                    {
+                        int eItemId = entitiesArray[i]["item_id"].AsInt;
+                        int eeId = entitiesArray[i]["entity_id"].AsInt;
+                        Entity entity = new Entity(eeId, eItemId);
+                        entity.posX = entitiesArray[i]["pos_x"].AsFloat;
+                        entity.posY = entitiesArray[i]["pos_y"].AsFloat;
+                        entity.posZ = entitiesArray[i]["pos_z"].AsFloat;
+                        onWorldMapEntityList.Add(entity);
+                    }
                 }
+                return successful;
             }
-            return successful;
+            else
+            {
+                return false;
+            }
         }
 
         public async Task<Dealer> GetDealerInventory(int dealerId)
