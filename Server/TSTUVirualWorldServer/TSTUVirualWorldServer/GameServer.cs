@@ -308,6 +308,7 @@ namespace TSTUVirualWorldServer
                     answer["answer"] = false;
                     break;
                 }
+                answer["player_list"][i]["id"] = player.Id;
                 answer["player_list"][i]["model"] = player.playerModel;
             }
 
