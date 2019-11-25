@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UniRx;
+using Crosstales.FB;
+using System.IO;
 
 namespace TSTU.Controller
 {
@@ -25,9 +28,13 @@ namespace TSTU.Controller
         [SerializeField] private Text InfoPanelText;
 
 
+        [Space(10)]
+        [SerializeField] private Button loadModelButton;
 
 
         private StateView stateView = StateView.signIn;
+
+        private string modelToLoad;
 
         private enum StateView
         {
@@ -41,29 +48,29 @@ namespace TSTU.Controller
             Registration.onClick.AddListener(OnRegistration);
             Back.onClick.AddListener(OnBack);
 
-
+            loadModelButton.OnClickAsObservable().Subscribe(_ => LoadModel()).AddTo(this);
         }
 
 
         public async void OnSignIn()
         {
             Debug.Log($"Отправка сообщения { Login.text} - {Password.text}");
-            var answer = await GameController.Instance.GameServer.Login(Login.text, Password.text, string.Empty);
+            var answer = await GameController.Instance.GameServer.Login(Login.text, Password.text, modelToLoad == null ? string.Empty : modelToLoad);
             if (answer)
             {
                 Debug.Log($"Вход совершен");
-                SceneManager.LoadScene(1, LoadSceneMode.Single);                
+                SceneManager.LoadScene(1, LoadSceneMode.Single);
             }
             else
             {
                 Debug.Log($"В базе данных нет такого пользователя");
             }
         }
-                
+
 
         public async void OnRegistration()
         {
-            if(stateView == StateView.signIn)
+            if (stateView == StateView.signIn)
             {
                 SignIn.gameObject.SetActive(false);
                 Back.gameObject.SetActive(true);
@@ -74,7 +81,7 @@ namespace TSTU.Controller
             }
             else if (stateView == StateView.registration)
             {
-                if(Password.text == Password2.text)
+                if (Password.text == Password2.text)
                 {
                     var answer = await GameController.Instance.GameServer.Registration(Login.text, Password.text);
                     if (answer)
@@ -110,6 +117,12 @@ namespace TSTU.Controller
             Password2.gameObject.SetActive(false);
             InfoPanelText.text = "Вход";
             stateView = StateView.signIn;
+        }
+
+        private void LoadModel()
+        {
+            string path = FileBrowser.OpenSingleFile("obj");
+            modelToLoad = File.ReadAllText(path);
         }
     }
 

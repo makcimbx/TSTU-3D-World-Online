@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UniRx;
 using TSTU.Controller;
 using TSTU.Model;
+using Dummiesman;
+using System.Text;
+using System.IO;
 
 public class PlayerOnlineController : MonoBehaviour
 {
@@ -13,12 +16,16 @@ public class PlayerOnlineController : MonoBehaviour
 
     private Dictionary<Entity, Transform> itemList = new Dictionary<Entity, Transform>();
 
+    private KeyValuePair<string, GameObject> playerCustomModel;
+
     private async void Start()
     {
         await GameController.Instance.GameServer.StartPlayerInfoStream();
 
         UpdateInfo();
         //GameController.Instance.OnSecondPassed.Subscribe(_ => UpdateInfo()).AddTo(this);
+
+
     }
 
     private async void UpdateInfo()
@@ -65,10 +72,23 @@ public class PlayerOnlineController : MonoBehaviour
 
                     if (spawnedPlayer == null)
                     {
-                        var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
-                        var player = new TSTU.Model.Player(item.Id);
-                        player.PositionOnMap = item.PositionOnMap;
-                        playerList.Add(player, controller);
+                        if (item.playerModel == string.Empty)
+                        {
+                            var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+                            var player = new TSTU.Model.Player(item.Id);
+                            player.PositionOnMap = item.PositionOnMap;
+                            playerList.Add(player, controller);
+                        }
+                        else
+                        {
+                            byte[] byteArray = Encoding.UTF8.GetBytes(item.playerModel);
+                            MemoryStream stream = new MemoryStream(byteArray);
+                            var prefab = new OBJLoader().Load(stream);
+                            var controller = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+                            var player = new TSTU.Model.Player(item.Id);
+                            player.PositionOnMap = item.PositionOnMap;
+                            playerList.Add(player, controller.transform);
+                        }
                     }
                 }
 
@@ -78,7 +98,7 @@ public class PlayerOnlineController : MonoBehaviour
                 await GameController.Instance.GameServer.UpdateWorldEntityPositionsStream(listout);
 
                 var listin = GameController.Instance.GameServer.OnWorldMapEntityList;
-                var deaditem = new Dictionary<Entity, Transform>(); 
+                var deaditem = new Dictionary<Entity, Transform>();
 
                 foreach (var item in itemList)
                 {
