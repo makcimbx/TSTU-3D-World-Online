@@ -34,9 +34,10 @@ public class PlayerOnlineController : MonoBehaviour
         {
             while (true)
             {
+                Debug.Log("38");
                 GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
                 await GameController.Instance.GameServer.UpdatePlayerInfoStream();
-
+                Debug.Log("40");
                 var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
                 Dictionary<Player, Transform> toDestroyList = new Dictionary<Player, Transform>();
                 foreach (var item in playerList)
@@ -94,9 +95,9 @@ public class PlayerOnlineController : MonoBehaviour
 
 
                 var listout = new List<Entity>();
-
+                Debug.Log("99");
                 await GameController.Instance.GameServer.UpdateWorldEntityPositionsStream(listout);
-
+                Debug.Log("101");
                 var listin = GameController.Instance.GameServer.OnWorldMapEntityList;
                 var deaditem = new Dictionary<Entity, Transform>();
 
@@ -147,12 +148,11 @@ public class PlayerOnlineController : MonoBehaviour
                         itemList.Add(entity, controller.transform);
                     }
                 }
-
             }
         }
-        catch
+        catch(Exception e)
         {
-
+            Debug.Log(e.ToString());
         }
     }
 }

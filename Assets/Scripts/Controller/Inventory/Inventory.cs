@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TSTU.Model;
 using UnityEngine;
 namespace TSTU.Controller
@@ -24,6 +25,7 @@ namespace TSTU.Controller
 
         public List<Item> ItemsBase = new List<Item>();
 
+        public bool debug = false;
 
         public Dictionary<int, Item> items
         {
@@ -36,7 +38,8 @@ namespace TSTU.Controller
                     var it = instance.ItemsBase.Find(x => x.typeId == item.Value.itemId);
                     if (it == null)
                     {
-                        Debug.Log("Несоответствие предметов");
+                        if(debug)
+                            Debug.Log("Несоответствие предметов");
 
                         continue;
                     }
@@ -93,15 +96,19 @@ namespace TSTU.Controller
         public bool isFull { get { return GetFreeSlot() == -1; } }
 
 
-        public async void Add(Item item)
+        public async Task Add(Item item)
         {
             if (!item.isDefaultItem)
             {
                 var slot = GetFreeSlot();
                 if (slot != -1)
+                {
                     await GameController.Instance.GameServer.AddEntityInInventoryStream(slot, item.typeId, item.eId);
+                    if (debug)
+                        Debug.Log($"Add in {slot} - {item.name}");
+                }
 
-
+              
                 OnInventoryChange?.Invoke();
             }
         }
@@ -124,10 +131,33 @@ namespace TSTU.Controller
         public async void Remove(Item item, bool isTrade, Vector3 position)
         {
             await GameController.Instance.GameServer.DropEntityFromInventoryStream(item.typeId, item.eId, isTrade, position);
+          
             OnInventoryChange?.Invoke();
 
         }
 
+        public async void Trade(InventorySlot[] buy, InventorySlot[] sell)
+        {
+            foreach (var slot in buy)
+            {
+                if (!slot.isEmpty){
+                   
+                    await Add(slot.GetAndClearItem());
+               
+                }
+            }
+
+
+            foreach (var slot in sell)
+            {
+                if (!slot.isEmpty)
+                {
+                    var item = slot.GetAndClearItem();
+                    Remove(item, true, Vector3.zero);
+
+                }
+            }
+        }
 
     }
 }

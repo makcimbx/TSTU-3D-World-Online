@@ -334,6 +334,7 @@ namespace TSTU.Server
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             Dealer dealer = new Dealer(dealerId);
+            Debug.Log("dealer" + successful);
             if (successful)
             {
                 var inventoryArray = jsonAnswer["dealer_inventory"].AsArray;

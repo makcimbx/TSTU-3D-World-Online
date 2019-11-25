@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+
 namespace TSTU.Controller
 {
     public class Trader : Interacteble
@@ -15,14 +18,15 @@ namespace TSTU.Controller
 
 
 
-        public async void UpdateInventory()
-        {
+        public async Task UpdateInventory()
+        {                         
             var a = await GameController.Instance.GameServer.GetDealerInventory(id);
             var list = new List<Item>();
             foreach (var item in a.inventory)
             {
                 list.Add(Inventory.GetItem(item));
             }
+            Debug.Log($"list Trader {list.Count}");
             Items = list.ToArray();
         } 
 

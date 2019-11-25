@@ -40,13 +40,7 @@ namespace TSTU.Controller
             Trade,
             Search
         }
-
-
-        private void Start()
-        {
-            Inventory.instance.OnInventoryChange += UpdateUI;
-        }
-
+        
         internal Item GetSelectedItem()
         {
             return GetItem(selectedItem);
@@ -80,8 +74,9 @@ namespace TSTU.Controller
             PanelInit(traderPanel, InventoryPanel.Panel.Trader);
             PanelInit(buyPanel, InventoryPanel.Panel.Buy);
             PanelInit(sellPanel, InventoryPanel.Panel.Sell);
-                      
-            UpdateUI();
+
+            Inventory.instance.OnInventoryChange += UpdateUI;
+            //UpdateUI();
             CloseAll();
         }
 
@@ -92,6 +87,10 @@ namespace TSTU.Controller
 
             back.gameObject.SetActive(false);
             trade.gameObject.SetActive(false);
+
+
+            back.onClick.AddListener(CloseAll);
+            trade.onClick.AddListener(Trade);
         }
 
         private void PanelInit(InventoryPanel panel, InventoryPanel.Panel namePanel)
@@ -255,9 +254,10 @@ namespace TSTU.Controller
         #endregion
 
 
-        public void UpdateUI()
+        public async void UpdateUI()
         {
             var inventory = Inventory.instance.items;
+
 
             for (int i = 0; i < playerPanel.Slots.Length; i++)
             {
@@ -276,20 +276,32 @@ namespace TSTU.Controller
            
             if (inventoryState == InventoryState.Trade)
             {
-                var traderInventory = trader.Items;
-                for (int i = 0; i < traderPanel.Slots.Length; i++)
+                if (trader != null)
                 {
-                    if (i < traderInventory.Length)
-                    {
-                        traderPanel.Slots[i].AddItem(traderInventory[i]);
+                    await trader.UpdateInventory();
 
-                    }
-                    else
+                     var traderInventory = trader.Items;
+
+                    Debug.Log($"list Trader {traderInventory.Length}");
+
+                    for (int i = 0; i < traderPanel.Slots.Length; i++)
                     {
-                        traderPanel.Slots[i].ClearSlot();
+                        if (i < traderInventory.Length)
+                        {
+                            traderPanel.Slots[i].AddItem(traderInventory[i]);
+
+                        }
+                        else
+                        {
+                            traderPanel.Slots[i].ClearSlot();
+                        }
                     }
                 }
-
+                else
+                {
+                    if (debug)
+                        Debug.Log("Trader " + dragState);
+                }
             }
 
             playerPanel.Money = Inventory.instance.Money;
@@ -299,15 +311,7 @@ namespace TSTU.Controller
 
         internal void Trade()
         {
-            foreach (var slot in sellPanel.Slots)
-            {
-                if (!slot.isEmpty)
-                {
-                    var item = slot.GetAndClearItem();
-
-                }
-                    
-            }
+            Inventory.instance.Trade(buyPanel.Slots, sellPanel.Slots);            
             Debug.Log("Обмен с торговцем" + trader.gameObject.name);
         }
 
@@ -350,7 +354,7 @@ namespace TSTU.Controller
                 inventoryState = InventoryState.Trade;
                 this.trader = trader;
                 trader.UpdateInventory();
-                Inventory.instance.OnInventoryChange += trader.UpdateInventory;
+               
 
                 StateActivePanel();
 
@@ -397,7 +401,7 @@ namespace TSTU.Controller
 
                 inventoryState = InventoryState.None;
                 UpdateUI();
-                Inventory.instance.OnInventoryChange -= trader.UpdateInventory;
+                
                 trader = null;
                 StateActivePanel();
                 

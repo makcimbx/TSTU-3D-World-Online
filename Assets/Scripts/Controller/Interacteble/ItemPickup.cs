@@ -12,7 +12,6 @@
                 if (!Inventory.instance.isFull)
                 {
                     Inventory.instance.Add(item);
-                    Destroy(gameObject);
                 }
               
             }
