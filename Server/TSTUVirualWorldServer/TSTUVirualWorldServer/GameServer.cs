@@ -22,7 +22,9 @@ namespace TSTUVirualWorldServer
         AddEntityInInventory,
         DropEntityFromInventory,
         UpdateWorldEntityPositions,
-        GetDealerInventory
+        GetDealerInventory,
+        AddMessageToChat,
+        GetMessagesFromChat
     }
 
     public class GameServer
@@ -36,6 +38,7 @@ namespace TSTUVirualWorldServer
         private Dictionary<Player, IPEndPoint> usersIdIpList = new Dictionary<Player, IPEndPoint>();
         private Dictionary<Player, System.Timers.Timer> usersTimeoutList = new Dictionary<Player, System.Timers.Timer>();
         private List<Entity> worldMapEntityList = new List<Entity>();
+        private List<string> chatMessagesList = new List<string>();
 
         private UdpClient receiver;
 
@@ -98,6 +101,14 @@ namespace TSTUVirualWorldServer
                     else if(state == (int)ServerState.GetDealerInventory)
                     {
                         GetDealerInventoryStream(jsonMessage, remoteIp);
+                    }
+                    else if(state == (int)ServerState.AddMessageToChat) 
+                    {
+
+                    }
+                    else if (state == (int)ServerState.GetMessagesFromChat)
+                    {
+
                     }
                 }
             }
@@ -461,6 +472,40 @@ namespace TSTUVirualWorldServer
                 answer["dealer_inventory"][counter]["item_id"] = item.itemId;
                 counter++;
             }
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void AddMessageToChatStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос на добавление сообщения в чат! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+            answer["answer"] = true;
+
+            var message = jsonNode["message"].GetStringOrDefault(string.Empty);
+            chatMessagesList.Add(message);
+
+            SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
+        }
+
+        private void GetMessagesFromChatStream(JSONNode jsonNode, IPEndPoint remoteIp)
+        {
+            LogMessage($"Запрос на получение сообщений из чата! Id: {jsonNode["id"]};");
+            LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
+
+            JSONObject answer = new JSONObject();
+
+            var messageCount = jsonNode["message_count"].AsInt;
+            int counter = 0;
+            for (int i = 0; i < messageCount; i++)
+            {
+                if (chatMessagesList.Count - i - 1 < 0) break;
+                answer["messages"][i] = chatMessagesList[chatMessagesList.Count - i - 1];
+                counter++;
+            }
+            answer["answer"] = counter > 0;
 
             SendMessage(answer.ToString(), remoteIp.Address.ToString(), remoteIp.Port);
         }
