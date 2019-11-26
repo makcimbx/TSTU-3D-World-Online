@@ -38,15 +38,19 @@ namespace TSTU.Controller
         {
             get
             {
-                return long.Parse(money.text);
+                long m = 0;
+                if (long.TryParse(money.text, out m))
+                    return m;
+                else
+                    return 0;
             }
             set
             {
                 money.text = $"{value}";
+
             }
+
         }
-
-
         public bool Active
         {
             get

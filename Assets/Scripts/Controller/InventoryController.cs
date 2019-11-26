@@ -162,41 +162,44 @@ namespace TSTU.Controller
             }
             if (dragState == DragState.dragAndSelect)
             {
-              
 
+                Item drag = dragItem.GetAndClearItem();
+                Item select = selectedItem.GetAndClearItem();
+                
                 if (selectedItem.panel == InventoryPanel.Panel.Player)
                 {
-                    //var index = dragItem.gameObject.transform.GetSiblingIndex();
-                    //dragItem.gameObject.transform.SetSiblingIndex(selectedItem.gameObject.transform.GetSiblingIndex());
-                    //selectedItem.gameObject.transform.SetSiblingIndex(index);
-                    Item drag = dragItem.GetAndClearItem();
-                    Item select = selectedItem.GetAndClearItem();
-                    if (select != null)
-                        dragItem.AddItem(select);
-                    selectedItem.AddItem(drag);
+                    playerPanel.Money = Inventory.instance.Money;
+                    
+                    if (dragItem.panel == InventoryPanel.Panel.Sell)
+                        sellPanel.Money = sellPanel.Money - drag.price;
                 }
                 else if (selectedItem.panel == InventoryPanel.Panel.Sell)
                 {
-                    Item drag = dragItem.GetAndClearItem();
-                    Item select = selectedItem.GetAndClearItem();
-                    if (select != null)
-                        dragItem.AddItem(select);
-                    selectedItem.AddItem(drag);
-
+                    if(dragItem.panel == InventoryPanel.Panel.Player)
+                        sellPanel.Money = sellPanel.Money + drag.price;
+                    
                 }
-                else if (selectedItem.panel == InventoryPanel.Panel.Buy ||
-                    selectedItem.panel == InventoryPanel.Panel.Trader)
+                else if (selectedItem.panel == InventoryPanel.Panel.Buy )
                 {
-                    Item drag = dragItem.GetAndClearItem();
-                    Item select = selectedItem.GetAndClearItem();
-                    if (select != null)
-                        dragItem.AddItem(select);
-                    selectedItem.AddItem(drag);
+                    if(dragItem.panel == InventoryPanel.Panel.Trader)
+                    {
+                        buyPanel.Money = buyPanel.Money + drag.price;
+
+                    }
+                }
+                else if (selectedItem.panel == InventoryPanel.Panel.Trader)
+                {
+                    if (dragItem.panel == InventoryPanel.Panel.Buy)
+                    {
+                        buyPanel.Money = buyPanel.Money - drag.price;
+
+                    }
                 }
 
+                if (select != null)
+                    dragItem.AddItem(select);
+                selectedItem.AddItem(drag);
 
-
-              
 
                 dragState = DragState.select;
             }
@@ -311,7 +314,8 @@ namespace TSTU.Controller
 
         internal void Trade()
         {
-            Inventory.instance.Trade(buyPanel.Slots, sellPanel.Slots);            
+            Inventory.instance.Trade(buyPanel.Slots, sellPanel.Slots);
+            sellPanel.Money = buyPanel.Money = 0;
             Debug.Log("Обмен с торговцем" + trader.gameObject.name);
         }
 
@@ -347,13 +351,13 @@ namespace TSTU.Controller
                 SetActiveTrading(false);
         }
 
-        internal void StartTrading(Trader trader)
+        internal async void StartTrading(Trader trader)
         {
             if (inventoryState == InventoryState.None)
             {
                 inventoryState = InventoryState.Trade;
                 this.trader = trader;
-                trader.UpdateInventory();
+                await trader.UpdateInventory();
                
 
                 StateActivePanel();

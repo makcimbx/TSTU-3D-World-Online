@@ -27,6 +27,9 @@ namespace TSTU.Controller
 
         public bool debug = false;
 
+
+        public Item CarryItem { get; set; } = null;
+
         public Dictionary<int, Item> items
         {
             get
@@ -69,7 +72,7 @@ namespace TSTU.Controller
                 eId = entity.eId,
                 typeId = item.typeId,
                 prefab = item.prefab,
-                price = item.price,
+                price = entity.price,
                 icon = item.icon,
                 isDefaultItem = item.isDefaultItem,
                 name = item.name

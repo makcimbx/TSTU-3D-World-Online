@@ -8,7 +8,9 @@ namespace TSTU.Controller
 {
     [RequireComponent(
         typeof(InventoryController), 
-        typeof(FirstPersonController))]
+        typeof(FirstPersonController),
+        typeof(ChatController)
+        )]
 
     public class PlayerController : MonoBehaviour
     {
@@ -40,6 +42,7 @@ namespace TSTU.Controller
         [Header("Кнопка торговать")]
         [SerializeField] private Button trade;
 
+
         private Transform moveObject;
         private Rigidbody moveObjectRb;
         private bool IsСarry = false;
@@ -47,6 +50,7 @@ namespace TSTU.Controller
 
         private FirstPersonController firstPersonController;
         private InventoryController inventoryController;
+        private ChatController chatController;
 
         [SerializeField] private StateView stateView = StateView.None;
                
@@ -56,7 +60,8 @@ namespace TSTU.Controller
             Inventory,
             Menu,
             Trade,
-            Search
+            Search,
+            Chat
         }
 
 
@@ -64,6 +69,7 @@ namespace TSTU.Controller
         {
             inventoryController = GetComponent<InventoryController>();
             firstPersonController = GetComponent<FirstPersonController>();
+            chatController = GetComponent<ChatController>();
 
             Cursor.lockState = CursorLockMode.Locked;
             inventoryController.SetInventoryPanels(playerPanel, traderPanel, buyPanel, sellPanel);
@@ -106,7 +112,15 @@ namespace TSTU.Controller
                     stateView = StateView.None;
                     Cursor.lockState = CursorLockMode.Locked;
                 }
-                else
+                else if (stateView == StateView.Chat)
+                {
+
+                    stateView = StateView.None;
+                    firstPersonController.enabled = true;
+                    Cursor.lockState = CursorLockMode.Locked;
+                    chatController.SetActive(false);
+                }
+                else if (stateView == StateView.None)
                 {
                     stateView = StateView.Menu;
                     firstPersonController.enabled = false;
@@ -223,6 +237,34 @@ namespace TSTU.Controller
                 moveObjectRb = null;
             }
             #endregion
+            #region Enter
+            if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                chatController.Submit();
+            }
+            #endregion
+            #region T
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                if (stateView == StateView.None)
+                {
+                    chatController.SetActive(true);
+                    firstPersonController.enabled = false;
+                    Cursor.lockState = CursorLockMode.None;
+
+                }
+                else if (stateView == StateView.Chat)
+                {
+                    chatController.SetActive(false);
+                    firstPersonController.enabled = true;
+                    Cursor.lockState = CursorLockMode.Locked;
+
+                }
+
+
+            }
+            #endregion
+
         }
         #endregion
 
