@@ -41,13 +41,9 @@ namespace TSTU.Controller
         [Space(10)]
         [Header("Кнопка торговать")]
         [SerializeField] private Button trade;
-
-
-        private Transform moveObject;
-        private Rigidbody moveObjectRb;
+                
         private bool IsСarry = false;
-
-
+        
         private FirstPersonController firstPersonController;
         private InventoryController inventoryController;
         private ChatController chatController;
@@ -201,11 +197,8 @@ namespace TSTU.Controller
                                 {
                                     if (item.isСarryble)
                                     {
-                                        moveObject = item.transform;
+                                        Inventory.instance.CarryItem = item.transform;
                                         IsСarry = true;
-                                     
-                                        moveObject.gameObject.TryGetComponent<Rigidbody>(out moveObjectRb);
-                                        moveObjectRb.Sleep();
                                     }
                                 }
                             }
@@ -214,29 +207,16 @@ namespace TSTU.Controller
                     else
                     {
                         IsСarry = false;
-                        moveObject = null;
-                        moveObjectRb.WakeUp();
-                        moveObjectRb = null;
+                        Inventory.instance.CarryItem = null;
                     }
                     
                 }                  
             }
             if (IsСarry)
             {
-                moveObject.position = pointMove.position;
+                Inventory.instance.CarryItem.position = pointMove.position;
             }
-            #endregion
-            #region OnMouseDown
-            if (Input.GetMouseButtonDown(0) && stateView == StateView.None && IsСarry)
-            {
-                var ray = Camera.main.ScreenPointToRay(Input.mousePosition);                
-                IsСarry = false;
-                moveObject = null;
-                moveObjectRb.WakeUp();
-                moveObjectRb.AddForce(ray.direction * 50,ForceMode.Impulse);
-                moveObjectRb = null;
-            }
-            #endregion
+            #endregion         
             #region Enter
             if (Input.GetButtonDown("Submit"))
             {

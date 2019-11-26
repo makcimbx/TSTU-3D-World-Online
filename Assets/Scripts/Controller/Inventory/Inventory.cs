@@ -28,7 +28,7 @@ namespace TSTU.Controller
         public bool debug = false;
 
 
-        public Item CarryItem { get; set; } = null;
+        public Transform CarryItem { get; set; } = null;
 
         public Dictionary<int, Item> items
         {

@@ -12,7 +12,6 @@ public class ChatController : MonoBehaviour
 
     [SerializeField] private bool debug = false;
 
-       
     internal void Submit()
     {
         if(debug)

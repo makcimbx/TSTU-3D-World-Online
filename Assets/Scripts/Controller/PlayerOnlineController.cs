@@ -95,6 +95,18 @@ public class PlayerOnlineController : MonoBehaviour
 
 
                 var listout = new List<Entity>();
+
+                if (Inventory.instance.CarryItem != null)
+                {
+                    Debug.Log("CarryItem" + Inventory.instance.CarryItem.name);
+                    var carryItem = Inventory.instance.CarryItem.GetComponent<ItemPickup>();
+                    var carryEntity = new Entity(carryItem.item.eId, carryItem.item.typeId);
+                    carryEntity.posX = carryItem.transform.position.x;
+                    carryEntity.posY = carryItem.transform.position.y;
+                    carryEntity.posZ = carryItem.transform.position.z;
+                    listout.Add(carryEntity);
+                }
+
                 Debug.Log("99");
                 await GameController.Instance.GameServer.UpdateWorldEntityPositionsStream(listout);
                 Debug.Log("101");
