@@ -26,8 +26,7 @@ namespace TSTU.Controller
         public List<Item> ItemsBase = new List<Item>();
 
         public bool debug = false;
-
-
+        
         public Transform CarryItem { get; set; } = null;
 
         public Dictionary<int, Item> items

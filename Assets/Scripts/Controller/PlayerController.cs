@@ -66,6 +66,7 @@ namespace TSTU.Controller
             inventoryController = GetComponent<InventoryController>();
             firstPersonController = GetComponent<FirstPersonController>();
             chatController = GetComponent<ChatController>();
+            chatController.Initialization();
             chatController.SetActive(false);
 
             
