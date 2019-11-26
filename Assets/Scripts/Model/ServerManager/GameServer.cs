@@ -21,7 +21,9 @@ namespace TSTU.Server
         AddEntityInInventory,
         DropEntityFromInventory,
         UpdateWorldEntityPositions,
-        GetDealerInventory
+        GetDealerInventory,
+        AddMessageToChat,
+        GetMessagesFromChat
     }
 
     public class GameServer : IGameServer, ITickable, IConfigProvider
@@ -36,6 +38,7 @@ namespace TSTU.Server
         private TSTU.Model.Player player;
         private List<TSTU.Model.Player> otherPlayerList = new List<Model.Player>();
         private List<Entity> onWorldMapEntityList = new List<Entity>();
+        private List<string> chatMessagesList = new List<string>();
 
         public string ConfigKey => configKey;
 
@@ -44,6 +47,8 @@ namespace TSTU.Server
         public List<TSTU.Model.Player> OtherPlayerList => otherPlayerList;
 
         public List<Entity> OnWorldMapEntityList => onWorldMapEntityList;
+
+        public List<string> ChatMessagesList => chatMessagesList;
 
         public void InitializeConfig(JSONNode config)
         {
@@ -353,7 +358,6 @@ namespace TSTU.Server
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             Dealer dealer = new Dealer(dealerId);
-            Debug.Log("dealer" + successful);
             if (successful)
             {
                 var inventoryArray = jsonAnswer["dealer_inventory"].AsArray;
@@ -368,6 +372,55 @@ namespace TSTU.Server
                 }
             }
             return successful ? dealer : null;
+        }
+
+        public async Task<bool> AddMessageToChat(string messageToChat)
+        {
+            if (player == null) return false;
+
+            UdpClient client = new UdpClient();
+            JSONObject jSONObject = new JSONObject();
+            jSONObject["state"] = (int)ServerState.GetDealerInventory;
+            jSONObject["id"] = player.Id;
+            jSONObject["message"] = messageToChat;
+            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            client.Send(data, data.Length, serverIpAddress, serverPort);
+
+            var answer = await client.ReceiveAsync();
+            client.Close();
+            string message = Encoding.UTF8.GetString(answer.Buffer);
+            JSONNode jsonAnswer = JSON.Parse(message);
+            var successful = jsonAnswer["answer"].AsBool;
+            return successful;
+        }
+
+        public async Task<bool> GetMessagesFromChat(int messageCount)
+        {
+            if (player == null) return false;
+
+            UdpClient client = new UdpClient();
+            JSONObject jSONObject = new JSONObject();
+            jSONObject["state"] = (int)ServerState.GetDealerInventory;
+            jSONObject["id"] = player.Id;
+            jSONObject["message_count"] = messageCount;
+            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            client.Send(data, data.Length, serverIpAddress, serverPort);
+
+            var answer = await client.ReceiveAsync();
+            client.Close();
+            string message = Encoding.UTF8.GetString(answer.Buffer);
+            JSONNode jsonAnswer = JSON.Parse(message);
+            var successful = jsonAnswer["answer"].AsBool;
+            if (successful)
+            {
+                chatMessagesList.Clear();
+                var massive = jsonAnswer["messages"].AsArray;
+                for (int i = 0; i < massive.Count; i++)
+                {
+                    chatMessagesList.Add(massive[i].GetStringOrDefault(string.Empty));
+                }
+            }
+            return successful;
         }
     }
 }

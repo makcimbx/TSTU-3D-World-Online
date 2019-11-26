@@ -15,8 +15,11 @@ namespace TSTU.Server
         Task<bool> DropEntityFromInventoryStream(int itemId, long eid, bool isSellToNpc, Vector3 worldDropPos);
         Task<bool> UpdateWorldEntityPositionsStream(List<Entity> worldEntitiesToUpdate);
         Task<Dealer> GetDealerInventory(int dealerId);
+        Task<bool> AddMessageToChat(string messageToChat);
+        Task<bool> GetMessagesFromChat(int messageCount);
         Player CurrentPlayer { get; }
         List<Player> OtherPlayerList { get; }
         List<Entity> OnWorldMapEntityList { get; }
+        List<string> ChatMessagesList { get; }
     }
 }
