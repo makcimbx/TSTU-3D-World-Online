@@ -63,7 +63,7 @@ namespace TSTUVirualWorldServer
                 while (true)
                 {
                     byte[] data = receiver.Receive(ref remoteIp); // получаем данные
-                    string message = Encoding.UTF8.GetString(data);
+                    string message = StringCompressor.Unzip(data); //Encoding.UTF8.GetString(data);
                     var jsonMessage = JSON.Parse(message);
                     var state = jsonMessage["state"].AsInt;
                     if(state == (int)ServerState.Login)
@@ -495,7 +495,7 @@ namespace TSTUVirualWorldServer
             LogMessage($"Запрос на получение сообщений из чата! Id: {jsonNode["id"]};");
             LogMessage($"Информация о клиенте! IPAdress: {remoteIp.Address}; Port: {remoteIp.Port};");
 
-            JSONObject answer = new JSONObject();
+            JSONObject answer = new JSONObject(); 
 
             var messageCount = jsonNode["message_count"].AsInt;
             int counter = 0;
@@ -516,7 +516,7 @@ namespace TSTUVirualWorldServer
             bool haveError = false;
             try
             {
-                byte[] data = Encoding.UTF8.GetBytes(message);
+                byte[] data = StringCompressor.Zip(message); //Encoding.UTF8.GetBytes(message);
                 sender.Send(data, data.Length, remoteAddress, remotePort); // отправка
             }
             catch (Exception ex)

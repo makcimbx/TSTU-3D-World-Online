@@ -68,12 +68,12 @@ namespace TSTU.Server
             jSONObject["state"] = (int)ServerState.Login;
             jSONObject["login"] = login;
             jSONObject["password"] = password;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successfull = jsonAnswer["answer"].AsBool;
             var userId = jsonAnswer["user_id"].AsInt;
@@ -93,12 +93,12 @@ namespace TSTU.Server
             jSONObject["state"] = (int)ServerState.Registration;
             jSONObject["login"] = login;
             jSONObject["password"] = password;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             return jsonAnswer["answer"].AsBool;
         }
@@ -112,12 +112,12 @@ namespace TSTU.Server
             jSONObject["state"] = (int)ServerState.StartPlayerInfoUpdate;
             jSONObject["id"] = player.Id;
             jSONObject["model"] = player.playerModel;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successfull = jsonAnswer["answer"].AsBool;
             if (successfull)
@@ -138,7 +138,7 @@ namespace TSTU.Server
             jSONObject["pos_x"] = player.PositionOnMap.x;
             jSONObject["pos_y"] = player.PositionOnMap.y;
             jSONObject["pos_z"] = player.PositionOnMap.z;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             int timeout = 200;
@@ -147,7 +147,7 @@ namespace TSTU.Server
             {
                 var answer = task.Result;
                 client.Close();
-                string message = Encoding.UTF8.GetString(answer.Buffer);
+                string message = StringCompressor.Unzip(answer.Buffer);
                 JSONNode jsonAnswer = JSON.Parse(message);
                 var successfull = jsonAnswer["answer"].AsBool;
                 if (successfull)
@@ -196,12 +196,12 @@ namespace TSTU.Server
             {
                 jSONObject["player_list"][i]["id"] = players[i].Id;
             }
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer); //Encoding.UTF8.GetString(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             if (successful)
@@ -227,12 +227,12 @@ namespace TSTU.Server
             jSONObject["item_id"] = itemId;
             jSONObject["entity_id"] = eid;
             jSONObject["place_number"] = placeNumber;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             if (successful)
@@ -265,12 +265,12 @@ namespace TSTU.Server
             jSONObject["pos_x"] = worldDropPos.x;
             jSONObject["pos_y"] = worldDropPos.y;
             jSONObject["pos_z"] = worldDropPos.z;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             if (successful)
@@ -304,7 +304,7 @@ namespace TSTU.Server
                 jSONObject["entity_list"][i]["pos_y"] = worldEntitiesToUpdate[i].posY;
                 jSONObject["entity_list"][i]["pos_z"] = worldEntitiesToUpdate[i].posZ;
             }
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
 
@@ -314,7 +314,7 @@ namespace TSTU.Server
             {
                 var answer = task.Result;
                 client.Close();
-                string message = Encoding.UTF8.GetString(answer.Buffer);
+                string message = StringCompressor.Unzip(answer.Buffer);
                 JSONNode jsonAnswer = JSON.Parse(message);
                 var successful = jsonAnswer["answer"].AsBool;
                 if (successful)
@@ -349,12 +349,12 @@ namespace TSTU.Server
             jSONObject["state"] = (int)ServerState.GetDealerInventory;
             jSONObject["id"] = player.Id;
             jSONObject["dealer_id"] = dealerId;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             Dealer dealer = new Dealer(dealerId);
@@ -380,15 +380,15 @@ namespace TSTU.Server
 
             UdpClient client = new UdpClient();
             JSONObject jSONObject = new JSONObject();
-            jSONObject["state"] = (int)ServerState.GetDealerInventory;
+            jSONObject["state"] = (int)ServerState.AddMessageToChat;
             jSONObject["id"] = player.Id;
             jSONObject["message"] = messageToChat;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             return successful;
@@ -400,15 +400,15 @@ namespace TSTU.Server
 
             UdpClient client = new UdpClient();
             JSONObject jSONObject = new JSONObject();
-            jSONObject["state"] = (int)ServerState.GetDealerInventory;
+            jSONObject["state"] = (int)ServerState.GetMessagesFromChat;
             jSONObject["id"] = player.Id;
             jSONObject["message_count"] = messageCount;
-            byte[] data = Encoding.UTF8.GetBytes(jSONObject.ToString());
+            byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
             var answer = await client.ReceiveAsync();
             client.Close();
-            string message = Encoding.UTF8.GetString(answer.Buffer);
+            string message = StringCompressor.Unzip(answer.Buffer);
             JSONNode jsonAnswer = JSON.Parse(message);
             var successful = jsonAnswer["answer"].AsBool;
             if (successful)

@@ -89,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleJSON.cs" />
     <Compile Include="SimpleJSONBinary.cs" />
+    <Compile Include="StringCompressor.cs" />
     <Compile Include="TSTUDataBaseDataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
