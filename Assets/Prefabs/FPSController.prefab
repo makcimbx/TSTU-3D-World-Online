@@ -140,6 +140,7 @@ GameObject:
   - component: {fileID: 739299889804582061}
   - component: {fileID: 739299889804582057}
   - component: {fileID: 739299889804582056}
+  - component: {fileID: 739299889873259089}
   m_Layer: 0
   m_Name: FPSController
   m_TagString: Untagged
@@ -444,7 +445,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb1805fbfcf427248a132dba6e6cf05e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Money: 1000
+  ItemsBase:
+  - {fileID: 11400000, guid: 801f0fa43a2887d4e92c31a98ab778f0, type: 2}
+  - {fileID: 11400000, guid: d8fcdc090c2c1804da339a2a14fe47f2, type: 2}
+  debug: 1
+  Size: 54
 --- !u!114 &739299889804582057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,7 +464,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPanel: {fileID: 0}
   traderPanel: {fileID: 0}
+  buyPanel: {fileID: 0}
+  sellPanel: {fileID: 0}
   pointMove: {fileID: 1701177912}
+  back: {fileID: 0}
+  trade: {fileID: 0}
+  stateView: 0
 --- !u!114 &739299889804582056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,3 +482,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcc495cea11f36746a9aae6559691118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debug: 1
+  dragState: 0
+  inventoryState: 0
+--- !u!114 &739299889873259089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739299890638086082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 357e3c0da695d454c893f5750b5c0ca2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  input: {fileID: 0}
+  text: {fileID: 0}
+  scrollbar: {fileID: 0}
+  debug: 0

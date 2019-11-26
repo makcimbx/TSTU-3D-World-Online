@@ -70,15 +70,16 @@ namespace TSTU.Controller
             inventoryController = GetComponent<InventoryController>();
             firstPersonController = GetComponent<FirstPersonController>();
             chatController = GetComponent<ChatController>();
+            chatController.SetActive(false);
 
-            Cursor.lockState = CursorLockMode.Locked;
+            
             inventoryController.SetInventoryPanels(playerPanel, traderPanel, buyPanel, sellPanel);
             inventoryController.SetButtons(back, trade);
 
 
 
-            
 
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         #region Update
@@ -114,11 +115,10 @@ namespace TSTU.Controller
                 }
                 else if (stateView == StateView.Chat)
                 {
-
-                    stateView = StateView.None;
+                    chatController.SetActive(false);
                     firstPersonController.enabled = true;
                     Cursor.lockState = CursorLockMode.Locked;
-                    chatController.SetActive(false);
+                    stateView = StateView.None;
                 }
                 else if (stateView == StateView.None)
                 {
@@ -238,9 +238,12 @@ namespace TSTU.Controller
             }
             #endregion
             #region Enter
-            if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (Input.GetButtonDown("Submit"))
             {
-                chatController.Submit();
+                if (stateView == StateView.Chat)
+                {
+                    chatController.Submit();
+                }
             }
             #endregion
             #region T
@@ -251,17 +254,9 @@ namespace TSTU.Controller
                     chatController.SetActive(true);
                     firstPersonController.enabled = false;
                     Cursor.lockState = CursorLockMode.None;
+                    stateView = StateView.Chat;
 
                 }
-                else if (stateView == StateView.Chat)
-                {
-                    chatController.SetActive(false);
-                    firstPersonController.enabled = true;
-                    Cursor.lockState = CursorLockMode.Locked;
-
-                }
-
-
             }
             #endregion
 
