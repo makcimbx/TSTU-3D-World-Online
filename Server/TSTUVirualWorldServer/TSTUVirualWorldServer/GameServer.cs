@@ -104,11 +104,11 @@ namespace TSTUVirualWorldServer
                     }
                     else if(state == (int)ServerState.AddMessageToChat) 
                     {
-
+                        AddMessageToChatStream(jsonMessage, remoteIp);
                     }
                     else if (state == (int)ServerState.GetMessagesFromChat)
                     {
-
+                        GetMessagesFromChatStream(jsonMessage, remoteIp);
                     }
                 }
             }
