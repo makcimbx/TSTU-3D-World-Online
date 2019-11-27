@@ -23,20 +23,18 @@ public class PlayerOnlineController : MonoBehaviour
     {
         await GameController.Instance.GameServer.StartPlayerInfoStream();
 
-        UpdatePositonInfoAsync();
-        UpdateEntityInfoAsync();
+        UpdateInfo();
         //GameController.Instance.OnSecondPassed.Subscribe(_ => UpdateInfo()).AddTo(this);
 
 
     }
 
-    private async void UpdatePositonInfoAsync()
+    private async void UpdateInfo()
     {
         try
         {
             while (true)
             {
-                Debug.Log("UpdatePlayerModel");
                 GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
                 GameController.Instance.GameServer.CurrentPlayer.RotationOnMap = transform.rotation.eulerAngles;
                 await GameController.Instance.GameServer.UpdatePlayerInfoStream();
@@ -97,21 +95,8 @@ public class PlayerOnlineController : MonoBehaviour
                         }
                     }
                 }
-            }
-        }
-        catch
-        {
 
-        }
-    }
 
-    private async void UpdateEntityInfoAsync()
-    {
-        try
-        {
-            while (true)
-            {
-                Debug.Log("UpdateEntityModel");
                 var listout = new List<Entity>();
 
                 if (Inventory.instance.CarryItem != null)
@@ -178,9 +163,10 @@ public class PlayerOnlineController : MonoBehaviour
                 }
             }
         }
-        catch
+        catch (Exception e)
         {
-
+            Debug.Log(e.ToString());
         }
     }
+}
 }
