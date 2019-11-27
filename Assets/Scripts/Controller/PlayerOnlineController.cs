@@ -47,8 +47,7 @@ public class PlayerOnlineController : MonoBehaviour
                     if (spawnedPlayer != null)
                     {
                         item.Value.position = spawnedPlayer.PositionOnMap;
-                        var rot = item.Value.rotation; 
-                        rot.eulerAngles = spawnedPlayer.RotationOnMap;
+                        item.Value.rotation = Quaternion.Euler(spawnedPlayer.RotationOnMap);
                     }
                     else
                     {
