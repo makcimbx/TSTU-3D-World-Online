@@ -8,6 +8,7 @@ namespace TSTU.Model
         public int Id;
 
         public Vector3 PositionOnMap;
+        public Vector3 RotationOnMap;
 
         public string playerModel;
         public string playerModelMD5Hash;

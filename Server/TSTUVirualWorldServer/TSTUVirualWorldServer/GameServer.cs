@@ -206,6 +206,10 @@ namespace TSTUVirualWorldServer
                 player.posY = jsonNode["pos_y"].AsFloat;
                 player.posZ = jsonNode["pos_z"].AsFloat;
 
+                player.rotX = jsonNode["rot_x"].AsFloat;
+                player.rotY = jsonNode["rot_y"].AsFloat;
+                player.rotZ = jsonNode["rot_z"].AsFloat;
+
                 var entityList = jsonNode["entity_list"].AsArray;
                 for (int i = 0; i < entityList.Count; i++)
                 {
@@ -281,6 +285,9 @@ namespace TSTUVirualWorldServer
                     message["player_massive"][counter]["pos_x"] = item.Key.posX;
                     message["player_massive"][counter]["pos_y"] = item.Key.posY;
                     message["player_massive"][counter]["pos_z"] = item.Key.posZ;
+                    message["player_massive"][counter]["rot_x"] = item.Key.rotX;
+                    message["player_massive"][counter]["rot_y"] = item.Key.rotY;
+                    message["player_massive"][counter]["rot_z"] = item.Key.rotZ;
                     message["player_massive"][counter]["model_hash"] = item.Key.modelMD5Hash;
                     counter++;
                 }

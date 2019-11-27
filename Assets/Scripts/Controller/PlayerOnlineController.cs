@@ -36,6 +36,7 @@ public class PlayerOnlineController : MonoBehaviour
             {
                 Debug.Log("38");
                 GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
+                GameController.Instance.GameServer.CurrentPlayer.RotationOnMap = transform.rotation.eulerAngles;
                 await GameController.Instance.GameServer.UpdatePlayerInfoStream();
                 Debug.Log("40");
                 var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
@@ -46,6 +47,8 @@ public class PlayerOnlineController : MonoBehaviour
                     if (spawnedPlayer != null)
                     {
                         item.Value.position = spawnedPlayer.PositionOnMap;
+                        var rot = item.Value.rotation; 
+                        rot.eulerAngles = spawnedPlayer.RotationOnMap;
                     }
                     else
                     {
@@ -78,6 +81,7 @@ public class PlayerOnlineController : MonoBehaviour
                             var controller = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
                             var player = new TSTU.Model.Player(item.Id);
                             player.PositionOnMap = item.PositionOnMap;
+                            player.RotationOnMap = item.RotationOnMap;
                             playerList.Add(player, controller);
                         }
                         else
@@ -88,6 +92,7 @@ public class PlayerOnlineController : MonoBehaviour
                             var controller = Instantiate(prefab, Vector3.zero, Quaternion.identity);
                             var player = new TSTU.Model.Player(item.Id);
                             player.PositionOnMap = item.PositionOnMap;
+                            player.RotationOnMap = item.RotationOnMap;
                             playerList.Add(player, controller.transform);
                         }
                     }

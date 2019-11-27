@@ -138,6 +138,9 @@ namespace TSTU.Server
             jSONObject["pos_x"] = player.PositionOnMap.x;
             jSONObject["pos_y"] = player.PositionOnMap.y;
             jSONObject["pos_z"] = player.PositionOnMap.z;
+            jSONObject["rot_x"] = player.RotationOnMap.x;
+            jSONObject["rot_y"] = player.RotationOnMap.y;
+            jSONObject["rot_z"] = player.RotationOnMap.z;
             byte[] data = StringCompressor.Zip(jSONObject.ToString());
             client.Send(data, data.Length, serverIpAddress, serverPort);
 
@@ -160,7 +163,9 @@ namespace TSTU.Server
                     {
                         var otherPlayer = new TSTU.Model.Player(playerMas[i]["id"].AsInt);
                         Vector3 pos = new Vector3(playerMas[i]["pos_x"].AsFloat, playerMas[i]["pos_y"].AsFloat, playerMas[i]["pos_z"].AsFloat);
+                        Vector3 rot = new Vector3(playerMas[i]["rot_x"].AsFloat, playerMas[i]["rot_y"].AsFloat, playerMas[i]["rot_z"].AsFloat);
                         otherPlayer.PositionOnMap = pos;
+                        otherPlayer.RotationOnMap = rot;
                         otherPlayer.playerModelMD5Hash = playerMas[i]["model_hash"].GetStringOrDefault(string.Empty);
                         newOtherPlayerList.Add(otherPlayer);
 
