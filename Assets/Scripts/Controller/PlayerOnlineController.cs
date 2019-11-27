@@ -34,11 +34,10 @@ public class PlayerOnlineController : MonoBehaviour
         {
             while (true)
             {
-                Debug.Log("38");
                 GameController.Instance.GameServer.CurrentPlayer.PositionOnMap = transform.position;
                 GameController.Instance.GameServer.CurrentPlayer.RotationOnMap = transform.rotation.eulerAngles;
                 await GameController.Instance.GameServer.UpdatePlayerInfoStream();
-                Debug.Log("40");
+
                 var otherPlayerList = GameController.Instance.GameServer.OtherPlayerList;
                 Dictionary<Player, Transform> toDestroyList = new Dictionary<Player, Transform>();
                 foreach (var item in playerList)
@@ -87,8 +86,7 @@ public class PlayerOnlineController : MonoBehaviour
                         {
                             byte[] byteArray = Encoding.UTF8.GetBytes(item.playerModel);
                             MemoryStream stream = new MemoryStream(byteArray);
-                            var prefab = new OBJLoader().Load(stream);
-                            var controller = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+                            var controller = new OBJLoader().Load(stream);
                             var player = new TSTU.Model.Player(item.Id);
                             player.PositionOnMap = item.PositionOnMap;
                             player.RotationOnMap = item.RotationOnMap;
@@ -102,7 +100,6 @@ public class PlayerOnlineController : MonoBehaviour
 
                 if (Inventory.instance.CarryItem != null)
                 {
-                    Debug.Log("CarryItem" + Inventory.instance.CarryItem.name);
                     var carryItem = Inventory.instance.CarryItem.GetComponent<ItemPickup>();
                     var carryEntity = new Entity(carryItem.item.eId, carryItem.item.typeId);
                     carryEntity.posX = carryItem.transform.position.x;
@@ -110,10 +107,9 @@ public class PlayerOnlineController : MonoBehaviour
                     carryEntity.posZ = carryItem.transform.position.z;
                     listout.Add(carryEntity);
                 }
-
-                Debug.Log("99");
+                
                 await GameController.Instance.GameServer.UpdateWorldEntityPositionsStream(listout);
-                Debug.Log("101");
+
                 var listin = GameController.Instance.GameServer.OnWorldMapEntityList;
                 var deaditem = new Dictionary<Entity, Transform>();
 
